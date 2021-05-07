@@ -1,6 +1,6 @@
-package int_stream
+package string_stream
 
-type A = int
+type A = string
 type Stream func() (A, Stream)
 
 func Unit(a A) Stream {

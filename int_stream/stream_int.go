@@ -1,14 +1,14 @@
 package int_stream
 
-type B = int
+type B_Int = int
 
-func (as Stream) Mapped_int(f func(e A) int) Stream {
+func (as Stream) Mapped_Int(f func(e A) B_Int) Stream {
 	if as == nil {
 		return nil
 	} else {
-		return func() (int, Stream) {
+		return func() (B_Int, Stream) {
 			h, t := as()
-			return f(h), t.Mapped_int(f)
+			return f(h), t.Mapped_Int(f)
 		}
 	}
 }
