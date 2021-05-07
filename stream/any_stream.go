@@ -1,21 +1,21 @@
 package stream
 
-type A_Int = int
-type Int_Stream func() (A_Int, Int_Stream)
+type A_Any = interface{}
+type Any_Stream func() (A_Any, Any_Stream)
 
-func Int_Empty() Int_Stream {
+func Any_Empty() Any_Stream {
 	return nil
 }
-func Int_Unit(a A_Int) Int_Stream {
-	return func() (A_Int, Int_Stream) {
+func Any_Unit(a A_Any) Any_Stream {
+	return func() (A_Any, Any_Stream) {
 		return a, nil
 	}
 }
-func (as Int_Stream) IsEmpty() bool {
+func (as Any_Stream) IsEmpty() bool {
 	return as == nil
 }
 
-func (as Int_Stream) Filtered(p func(A_Int) bool) Int_Stream {
+func (as Any_Stream) Filtered(p func(A_Any) bool) Any_Stream {
 	if as == nil {
 		return nil
 	} else {
@@ -33,23 +33,23 @@ func (as Int_Stream) Filtered(p func(A_Int) bool) Int_Stream {
 	}
 }
 
-func (as Int_Stream) PrecededBy(a A_Int) Int_Stream {
-	return func() (A_Int, Int_Stream) {
+func (as Any_Stream) PrecededBy(a A_Any) Any_Stream {
+	return func() (A_Any, Any_Stream) {
 		return a, as
 	}
 }
-func (as Int_Stream) SuccedeedBy(a A_Int) Int_Stream {
-	return as.FollowedBy(Int_Unit(a))
+func (as Any_Stream) SuccedeedBy(a A_Any) Any_Stream {
+	return as.FollowedBy(Any_Unit(a))
 }
-func (as1 Int_Stream) FollowedBy(as2 Int_Stream) Int_Stream {
+func (as1 Any_Stream) FollowedBy(as2 Any_Stream) Any_Stream {
 	if as1 != nil {
 		h, t := as1()
-		return func() (A_Int, Int_Stream) { return h, t.FollowedBy(as2) }
+		return func() (A_Any, Any_Stream) { return h, t.FollowedBy(as2) }
 	} else {
 		return as2
 	}
 }
-func (as1 Int_Stream) IsEqualTo(as2 Int_Stream) bool {
+func (as1 Any_Stream) IsEqualTo(as2 Any_Stream) bool {
 	if as1 == nil {
 		return as2 == nil
 	} else if as2 == nil {
@@ -61,7 +61,7 @@ func (as1 Int_Stream) IsEqualTo(as2 Int_Stream) bool {
 	}
 }
 
-func (as Int_Stream) AppendToSlice(s []A_Int) []A_Int {
+func (as Any_Stream) AppendToSlice(s []A_Any) []A_Any {
 	if as != nil {
 		h, t := as()
 		// All the following lines could be replaced by this << return t.AppendToSlice(append(s, h)) >> if the golang compiler supported tail recursion optimization.
@@ -74,7 +74,7 @@ func (as Int_Stream) AppendToSlice(s []A_Int) []A_Int {
 	return s
 }
 
-func (as Int_Stream) ToSlice(initialCapacity int) []A_Int {
-	slice := make([]A_Int, 0, initialCapacity)
+func (as Any_Stream) ToSlice(initialCapacity int) []A_Any {
+	slice := make([]A_Any, 0, initialCapacity)
 	return as.AppendToSlice(slice)
 }

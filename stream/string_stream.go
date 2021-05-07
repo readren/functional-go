@@ -26,9 +26,7 @@ func (as String_Stream) Filtered(p func(A_String) bool) String_Stream {
 			pass = p(h)
 		}
 		if pass {
-			return func() (A_String, String_Stream) {
-				return h, t.Filtered(p)
-			}
+			return t.Filtered(p).PrecededBy(h)
 		} else {
 			return nil
 		}
