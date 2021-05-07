@@ -1,6 +1,10 @@
-package generic_stream
+package stream
 
 type Any interface{}
+
+func Empty() Stream {
+	return nil
+}
 
 type Stream interface {
 	isEmpty() bool
