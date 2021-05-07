@@ -3,6 +3,9 @@ package stream
 type A_Int = int
 type Int_Stream func() (A_Int, Int_Stream)
 
+func Int_Empty() Int_Stream {
+	return nil
+}
 func Int_Unit(a A_Int) Int_Stream {
 	return func() (A_Int, Int_Stream) {
 		return a, nil

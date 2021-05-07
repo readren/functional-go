@@ -3,6 +3,9 @@ package stream
 type A_String = string
 type String_Stream func() (A_String, String_Stream)
 
+func String_Empty() String_Stream {
+	return nil
+}
 func String_Unit(a A_String) String_Stream {
 	return func() (A_String, String_Stream) {
 		return a, nil
