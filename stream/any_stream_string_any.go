@@ -1,11 +1,14 @@
 package stream
 
-// type K_String = string
-type V_Any = interface{}
+// The first type parameter of the methods
+// type a_string = string
 
-func (as Any_Stream) AppendToMap_string_any(m map[K_String]V_Any, g func(A_Any) (K_String, V_Any)) map[K_String]V_Any {
-	if as != nil {
-		h, t := as()
+// The second type parameter of the methods
+type b_any = interface{}
+
+func (es Any_Stream) AppendToMap_string_any(m map[a_string]b_any, g func(e_any) (a_string, b_any)) map[a_string]b_any {
+	if es != nil {
+		h, t := es()
 		k, v := g(h)
 		m[k] = v
 		for t != nil {

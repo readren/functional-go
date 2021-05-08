@@ -1,11 +1,14 @@
 package stream
 
-type K_String = string
-type V_Int = int
+// The first type parameter of the methods
+//type a_string = string
 
-func (as Int_Stream) AppendToMap_string_int(m map[K_String]V_Int, g func(A_Int) (K_String, V_Int)) map[K_String]V_Int {
-	if as != nil {
-		h, t := as()
+// The second type parameter of the methods
+type b_int = int
+
+func (es Int_Stream) AppendToMap_string_int(m map[a_string]b_int, g func(e_int) (a_string, b_int)) map[a_string]b_int {
+	if es != nil {
+		h, t := es()
 		k, v := g(h)
 		m[k] = v
 		for t != nil {
