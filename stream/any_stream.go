@@ -19,7 +19,7 @@ func Any_FromSlice(slice []e_any) Any {
 		return nil
 	} else {
 		return func() (e_any, Any) {
-			return slice[1], Any_FromSlice(slice[1:])
+			return slice[0], Any_FromSlice(slice[1:])
 		}
 	}
 }
@@ -38,21 +38,16 @@ func (es Any) IsEmpty() bool {
 }
 
 func (es Any) Filtered(p func(e_any) bool) Any {
-	if es == nil {
-		return nil
-	} else {
-		h, t := es()
-		pass := p(h)
-		for !pass && t != nil {
-			h, t = t()
-			pass = p(h)
-		}
-		if pass {
-			return t.Filtered(p).PrecededBy(h)
-		} else {
-			return nil
+	var h e_any
+	for es != nil {
+		h, es = es()
+		if p(h) {
+			return func() (e_any, Any) {
+				return h, es.Filtered(p)
+			}
 		}
 	}
+	return nil
 }
 
 func (es Any) PrecededBy(a e_any) Any {
@@ -65,12 +60,31 @@ func (es Any) SuccedeedBy(a e_any) Any {
 }
 func (es1 Any) FollowedBy(es2 Any) Any {
 	if es1 != nil {
-		h, t := es1()
-		return func() (e_any, Any) { return h, t.FollowedBy(es2) }
+		return func() (e_any, Any) {
+			h, t := es1()
+			return h, t.FollowedBy(es2)
+		}
 	} else {
 		return es2
 	}
 }
+
+func (es Any) ForAll(p func(e_any) bool) bool {
+	z := true
+	var h e_any
+	for es != nil && z {
+		h, es = es()
+		z = p(h)
+	}
+	return z
+}
+
+func (es Any) ForAny(p func(e_any) bool) bool {
+	return es.ForAll(func(e e_any) bool {
+		return !p(e)
+	})
+}
+
 func (es1 Any) IsEqualTo(es2 Any) bool {
 	if es1 == nil {
 		return es2 == nil

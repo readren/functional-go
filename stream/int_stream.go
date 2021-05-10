@@ -14,17 +14,15 @@ func Int_Unit(a e_int) Int {
 		return a, nil
 	}
 }
-
 func Int_FromSlice(slice []e_int) Int {
 	if len(slice) == 0 {
 		return nil
 	} else {
 		return func() (e_int, Int) {
-			return slice[1], Int_FromSlice(slice[1:])
+			return slice[0], Int_FromSlice(slice[1:])
 		}
 	}
 }
-
 func Int_FromSet(m map[e_int]bool) Int {
 	slice := make([]e_int, len(m))
 	for k := range m {
@@ -40,21 +38,16 @@ func (es Int) IsEmpty() bool {
 }
 
 func (es Int) Filtered(p func(e_int) bool) Int {
-	if es == nil {
-		return nil
-	} else {
-		h, t := es()
-		pass := p(h)
-		for !pass && t != nil {
-			h, t = t()
-			pass = p(h)
-		}
-		if pass {
-			return t.Filtered(p).PrecededBy(h)
-		} else {
-			return nil
+	var h e_int
+	for es != nil {
+		h, es = es()
+		if p(h) {
+			return func() (e_int, Int) {
+				return h, es.Filtered(p)
+			}
 		}
 	}
+	return nil
 }
 
 func (es Int) PrecededBy(a e_int) Int {
@@ -67,12 +60,31 @@ func (es Int) SuccedeedBy(a e_int) Int {
 }
 func (es1 Int) FollowedBy(es2 Int) Int {
 	if es1 != nil {
-		h, t := es1()
-		return func() (e_int, Int) { return h, t.FollowedBy(es2) }
+		return func() (e_int, Int) {
+			h, t := es1()
+			return h, t.FollowedBy(es2)
+		}
 	} else {
 		return es2
 	}
 }
+
+func (es Int) ForAll(p func(e_int) bool) bool {
+	z := true
+	var h e_int
+	for es != nil && z {
+		h, es = es()
+		z = p(h)
+	}
+	return z
+}
+
+func (es Int) ForAny(p func(e_int) bool) bool {
+	return es.ForAll(func(e e_int) bool {
+		return !p(e)
+	})
+}
+
 func (es1 Int) IsEqualTo(es2 Int) bool {
 	if es1 == nil {
 		return es2 == nil
