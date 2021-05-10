@@ -89,15 +89,15 @@ func (es IntSlice) ForAny(p func(e_intSlice) bool) bool {
 }
 
 func (es1 IntSlice) IsEqualTo(es2 IntSlice) bool {
-	if es1 == nil {
-		return es2 == nil
-	} else if es2 == nil {
-		return false
-	} else {
-		h1, t1 := es1()
-		h2, t2 := es2()
-		return reflect.DeepEqual(h1, h2) && t1.IsEqualTo(t2)
+	var h1, h2 e_intSlice
+	for es1 != nil && es2 != nil {
+		h1, es1 = es1()
+		h2, es2 = es2()
+		if !reflect.DeepEqual(h1, h2) {
+			return false
+		}
 	}
+	return es1 == nil && es2 == nil
 }
 
 func (es IntSlice) AppendToSlice(s []e_intSlice) []e_intSlice {

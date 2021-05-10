@@ -77,15 +77,15 @@ func (es1 StringSlice) FollowedBy(es2 StringSlice) StringSlice {
 	}
 }
 func (es1 StringSlice) IsEqualTo(es2 StringSlice) bool {
-	if es1 == nil {
-		return es2 == nil
-	} else if es2 == nil {
-		return false
-	} else {
-		h1, t1 := es1()
-		h2, t2 := es2()
-		return reflect.DeepEqual(h1, h2) && t1.IsEqualTo(t2)
+	var h1, h2 e_stringSlice
+	for es1 != nil && es2 != nil {
+		h1, es1 = es1()
+		h2, es2 = es2()
+		if !reflect.DeepEqual(h1, h2) {
+			return false
+		}
 	}
+	return es1 == nil && es2 == nil
 }
 
 func (es StringSlice) AppendToSlice(s []e_stringSlice) []e_stringSlice {

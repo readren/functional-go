@@ -86,15 +86,15 @@ func (es Any) ForAny(p func(e_any) bool) bool {
 }
 
 func (es1 Any) IsEqualTo(es2 Any) bool {
-	if es1 == nil {
-		return es2 == nil
-	} else if es2 == nil {
-		return false
-	} else {
-		h1, t1 := es1()
-		h2, t2 := es2()
-		return h1 == h2 && t1.IsEqualTo(t2)
+	var h1, h2 e_any
+	for es1 != nil && es2 != nil {
+		h1, es1 = es1()
+		h2, es2 = es2()
+		if h1 != h2 {
+			return false
+		}
 	}
+	return es1 == nil && es2 == nil
 }
 
 func (es Any) AppendToSlice(s []e_any) []e_any {
