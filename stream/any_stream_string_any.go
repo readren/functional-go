@@ -6,7 +6,7 @@ package stream
 // The second type parameter of the methods
 type b_any = interface{}
 
-func (es Any_Stream) AppendToMap_string_any(m map[a_string]b_any, g func(e_any) (a_string, b_any)) map[a_string]b_any {
+func (es Any) AppendToMap_string_any(m map[a_string]b_any, g func(e_any) (a_string, b_any)) map[a_string]b_any {
 	if es != nil {
 		h, t := es()
 		k, v := g(h)

@@ -3,7 +3,7 @@ package stream
 // The first type parameter of the methods
 type a_any = interface{}
 
-func (es Any_Stream) Mapped_Any(f func(e_any) a_any) Any_Stream {
+func (es Any) Mapped_Any(f func(e_any) a_any) Any {
 	if es == nil {
 		return nil
 	} else {
@@ -12,7 +12,7 @@ func (es Any_Stream) Mapped_Any(f func(e_any) a_any) Any_Stream {
 	}
 }
 
-func (es Any_Stream) Binded_Any(f func(e_any) Any_Stream) Any_Stream {
+func (es Any) Binded_Any(f func(e_any) Any) Any {
 	if es == nil {
 		return nil
 	} else {

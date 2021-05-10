@@ -3,7 +3,7 @@ package stream
 // The first type parameter of the methods
 // type a_int = int
 
-func (es String_Stream) Mapped_Int(f func(e e_string) a_int) Int_Stream {
+func (es String) Mapped_Int(f func(e e_string) a_int) Int {
 	if es == nil {
 		return nil
 	} else {
@@ -12,7 +12,7 @@ func (es String_Stream) Mapped_Int(f func(e e_string) a_int) Int_Stream {
 	}
 }
 
-func (es String_Stream) Binded_Int(f func(e_string) Int_Stream) Int_Stream {
+func (es String) Binded_Int(f func(e_string) Int) Int {
 	if es == nil {
 		return nil
 	} else {
