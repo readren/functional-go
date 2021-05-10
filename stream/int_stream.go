@@ -3,17 +3,29 @@ package stream
 // The type of the elements in the stream
 type e_int = int
 
-// The type of the stream itself
+func int_equality(e1, e2 e_int) bool {
+	return e1 == e2
+}
+
+// The type of the stream whose elements are of type `e_int`
 type Int func() (e_int, Int)
 
 func Int_Empty() Int {
 	return nil
 }
-func Int_Unit(a e_int) Int {
+
+func Int_Single(e e_int) Int {
 	return func() (e_int, Int) {
-		return a, nil
+		return e, nil
 	}
 }
+
+func Int_Forever(e e_int) Int {
+	return func() (e_int, Int) {
+		return e, Int_Forever(e)
+	}
+}
+
 func Int_FromSlice(slice []e_int) Int {
 	if len(slice) == 0 {
 		return nil
@@ -37,7 +49,34 @@ func (es Int) IsEmpty() bool {
 	return es == nil
 }
 
-func (es Int) Filtered(p func(e_int) bool) Int {
+func (es Int) TakeWhile(indexBase int, p func(elem e_int, index int) bool) Int {
+	if es == nil {
+		return nil
+	} else {
+		h, t := es()
+		if p(h, indexBase) {
+			return func() (e_int, Int) {
+				return h, t.TakeWhile(indexBase+1, p)
+			}
+		} else {
+			return nil
+		}
+	}
+}
+
+func (es Int) DropWhile(indexBase int, p func(elem e_int, index int) bool) Int {
+	for es != nil {
+		h, t := es()
+		if !p(h, indexBase) {
+			return es
+		}
+		indexBase += 1
+		es = t
+	}
+	return nil
+}
+
+func (es Int) Filtered(p func(elem e_int) bool) Int {
 	var h e_int
 	for es != nil {
 		h, es = es()
@@ -55,9 +94,11 @@ func (es Int) PrecededBy(a e_int) Int {
 		return a, es
 	}
 }
+
 func (es Int) SuccedeedBy(a e_int) Int {
-	return es.FollowedBy(Int_Unit(a))
+	return es.FollowedBy(Int_Single(a))
 }
+
 func (es1 Int) FollowedBy(es2 Int) Int {
 	if es1 != nil {
 		return func() (e_int, Int) {
@@ -90,7 +131,7 @@ func (es1 Int) IsEqualTo(es2 Int) bool {
 	for es1 != nil && es2 != nil {
 		h1, es1 = es1()
 		h2, es2 = es2()
-		if h1 != h2 {
+		if !int_equality(h1, h2) {
 			return false
 		}
 	}

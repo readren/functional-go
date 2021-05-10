@@ -3,17 +3,29 @@ package stream
 // The type of the elements in the stream
 type e_string = string
 
-// The type of the stream itself
+func string_equality(e1, e2 e_string) bool {
+	return e1 == e2
+}
+
+// The type of the stream whose elements are of type `e_string`
 type String func() (e_string, String)
 
 func String_Empty() String {
 	return nil
 }
-func String_Unit(a e_string) String {
+
+func String_Single(e e_string) String {
 	return func() (e_string, String) {
-		return a, nil
+		return e, nil
 	}
 }
+
+func String_Forever(e e_string) String {
+	return func() (e_string, String) {
+		return e, String_Forever(e)
+	}
+}
+
 func String_FromSlice(slice []e_string) String {
 	if len(slice) == 0 {
 		return nil
@@ -23,6 +35,7 @@ func String_FromSlice(slice []e_string) String {
 		}
 	}
 }
+
 func String_FromSet(m map[e_string]bool) String {
 	slice := make([]e_string, len(m))
 	for k := range m {
@@ -37,7 +50,34 @@ func (es String) IsEmpty() bool {
 	return es == nil
 }
 
-func (es String) Filtered(p func(e_string) bool) String {
+func (es String) TakeWhile(indexBase int, p func(elem e_string, index int) bool) String {
+	if es == nil {
+		return nil
+	} else {
+		h, t := es()
+		if p(h, indexBase) {
+			return func() (e_string, String) {
+				return h, t.TakeWhile(indexBase+1, p)
+			}
+		} else {
+			return nil
+		}
+	}
+}
+
+func (es String) DropWhile(indexBase int, p func(elem e_string, index int) bool) String {
+	for es != nil {
+		h, t := es()
+		if !p(h, indexBase) {
+			return es
+		}
+		indexBase += 1
+		es = t
+	}
+	return nil
+}
+
+func (es String) Filtered(p func(elem e_string) bool) String {
 	var h e_string
 	for es != nil {
 		h, es = es()
@@ -55,17 +95,19 @@ func (es String) PrecededBy(a e_string) String {
 		return a, es
 	}
 }
+
 func (es String) SuccedeedBy(a e_string) String {
-	return es.FollowedBy(String_Unit(a))
+	return es.FollowedBy(String_Single(a))
 }
-func (as1 String) FollowedBy(as2 String) String {
-	if as1 != nil {
+
+func (es1 String) FollowedBy(es2 String) String {
+	if es1 != nil {
 		return func() (e_string, String) {
-			h, t := as1()
-			return h, t.FollowedBy(as2)
+			h, t := es1()
+			return h, t.FollowedBy(es2)
 		}
 	} else {
-		return as2
+		return es2
 	}
 }
 
@@ -90,7 +132,7 @@ func (es1 String) IsEqualTo(es2 String) bool {
 	for es1 != nil && es2 != nil {
 		h1, es1 = es1()
 		h2, es2 = es2()
-		if h1 != h2 {
+		if !string_equality(h1, h2) {
 			return false
 		}
 	}

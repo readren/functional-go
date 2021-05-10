@@ -7,7 +7,7 @@ func (es Int) Mapped_string(f func(e_int) a_string) String {
 	if es == nil {
 		return nil
 	} else {
-		return func() (e_string, String) {
+		return func() (a_string, String) {
 			h, t := es()
 			return f(h), t.Mapped_string(f)
 		}
@@ -18,7 +18,7 @@ func (es Int) Binded_string(f func(e_int) String) String {
 	if es == nil {
 		return nil
 	} else {
-		return func() (e_string, String) {
+		return func() (a_string, String) {
 			he, te := es()
 			ha, ta := f(he)()
 			return ha, ta.FollowedBy(te.Binded_string(f))
@@ -43,11 +43,3 @@ func (es Int) FoldRight_string(f func(e_int, a_string) a_string, z a_string) a_s
 		return f(h, t.FoldRight_string(f, z))
 	}
 }
-
-// func Int_Traversed_string(slice []Int, f func(e_int) a_string) String {
-// 	if slice == nil || len(slice) == 0 {
-// 		return nil
-// 	} else {
-
-// 	}
-// }

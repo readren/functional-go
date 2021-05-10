@@ -3,17 +3,29 @@ package stream
 // The type of the elements in the stream
 type e_any = interface{}
 
-// The type of the stream itself
+func any_equality(e1, e2 e_any) bool {
+	return e1 == e2
+}
+
+// The type of the stream whose elements are of type `e_any`
 type Any func() (e_any, Any)
 
 func Any_Empty() Any {
 	return nil
 }
-func Any_Unit(a e_any) Any {
+
+func Any_Single(e e_any) Any {
 	return func() (e_any, Any) {
-		return a, nil
+		return e, nil
 	}
 }
+
+func Any_Forever(e e_any) Any {
+	return func() (e_any, Any) {
+		return e, Any_Forever(e)
+	}
+}
+
 func Any_FromSlice(slice []e_any) Any {
 	if len(slice) == 0 {
 		return nil
@@ -37,7 +49,34 @@ func (es Any) IsEmpty() bool {
 	return es == nil
 }
 
-func (es Any) Filtered(p func(e_any) bool) Any {
+func (es Any) TakeWhile(indexBase int, p func(elem e_any, index int) bool) Any {
+	if es == nil {
+		return nil
+	} else {
+		h, t := es()
+		if p(h, indexBase) {
+			return func() (e_any, Any) {
+				return h, t.TakeWhile(indexBase+1, p)
+			}
+		} else {
+			return nil
+		}
+	}
+}
+
+func (es Any) DropWhile(indexBase int, p func(elem e_any, index int) bool) Any {
+	for es != nil {
+		h, t := es()
+		if !p(h, indexBase) {
+			return es
+		}
+		indexBase += 1
+		es = t
+	}
+	return nil
+}
+
+func (es Any) Filtered(p func(elem e_any) bool) Any {
 	var h e_any
 	for es != nil {
 		h, es = es()
@@ -55,9 +94,11 @@ func (es Any) PrecededBy(a e_any) Any {
 		return a, es
 	}
 }
+
 func (es Any) SuccedeedBy(a e_any) Any {
-	return es.FollowedBy(Any_Unit(a))
+	return es.FollowedBy(Any_Single(a))
 }
+
 func (es1 Any) FollowedBy(es2 Any) Any {
 	if es1 != nil {
 		return func() (e_any, Any) {
@@ -90,7 +131,7 @@ func (es1 Any) IsEqualTo(es2 Any) bool {
 	for es1 != nil && es2 != nil {
 		h1, es1 = es1()
 		h2, es2 = es2()
-		if h1 != h2 {
+		if !any_equality(h1, h2) {
 			return false
 		}
 	}
