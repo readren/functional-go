@@ -1,5 +1,9 @@
 package stream
 
+import (
+	"fmt"
+)
+
 // The type of the elements in the stream
 type e_any = interface{}
 
@@ -35,6 +39,7 @@ func Any_FromSlice(slice []e_any) Any {
 		}
 	}
 }
+
 func Any_FromSet(m map[e_any]bool) Any {
 	slice := make([]e_any, len(m))
 	for k := range m {
@@ -47,6 +52,15 @@ func Any_FromSet(m map[e_any]bool) Any {
 
 func (es Any) IsEmpty() bool {
 	return es == nil
+}
+
+func (es Any) Size() int {
+	count := 0
+	for es != nil {
+		count += 1
+		_, es = es()
+	}
+	return count
 }
 
 func (es Any) TakeWhile(indexBase int, p func(elem e_any, index int) bool) Any {
@@ -127,15 +141,16 @@ func (es Any) ForAny(p func(e_any) bool) bool {
 }
 
 func (es1 Any) IsEqualTo(es2 Any) bool {
-	var h1, h2 e_any
-	for es1 != nil && es2 != nil {
-		h1, es1 = es1()
-		h2, es2 = es2()
-		if !any_equality(h1, h2) {
-			return false
-		}
-	}
-	return es1 == nil && es2 == nil
+	return es1.Corresponds_any(es2, any_equality)
+	// var h1, h2 e_any
+	// for es1 != nil && es2 != nil {
+	// 	h1, es1 = es1()
+	// 	h2, es2 = es2()
+	// 	if !any_equality(h1, h2) {
+	// 		return false
+	// 	}
+	// }
+	// return es1 == nil && es2 == nil
 }
 
 func (es Any) AppendToSlice(s []e_any) []e_any {
@@ -154,4 +169,31 @@ func (es Any) AppendToSlice(s []e_any) []e_any {
 func (es Any) ToSlice(initialCapacity int) []e_any {
 	slice := make([]e_any, 0, initialCapacity)
 	return es.AppendToSlice(slice)
+}
+
+//// implementation of PartialFunction[int, e_any] ////
+
+func (es Any) ApplyOrElse(index int, defaultValue func() e_any) e_any {
+	if index < 0 {
+		return defaultValue()
+	}
+	var h e_any
+	for es != nil {
+		h, es = es()
+		if index == 0 {
+			return h
+		}
+		index -= 1
+	}
+	return defaultValue()
+}
+
+func (es Any) Apply(index int) (e_any, error) {
+	var err error
+	v := es.ApplyOrElse(index, func() e_any {
+		err = fmt.Errorf("index out of bounds: %v", index)
+		var zero e_any
+		return zero
+	})
+	return v, err
 }

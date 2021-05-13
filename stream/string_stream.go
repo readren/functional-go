@@ -1,5 +1,7 @@
 package stream
 
+import "fmt"
+
 // The type of the elements in the stream
 type e_string = string
 
@@ -48,6 +50,15 @@ func String_FromSet(m map[e_string]bool) String {
 
 func (es String) IsEmpty() bool {
 	return es == nil
+}
+
+func (es String) Size() int {
+	count := 0
+	for es != nil {
+		count += 1
+		_, es = es()
+	}
+	return count
 }
 
 func (es String) TakeWhile(indexBase int, p func(elem e_string, index int) bool) String {
@@ -128,15 +139,16 @@ func (es String) ForAny(p func(e_string) bool) bool {
 }
 
 func (es1 String) IsEqualTo(es2 String) bool {
-	var h1, h2 e_string
-	for es1 != nil && es2 != nil {
-		h1, es1 = es1()
-		h2, es2 = es2()
-		if !string_equality(h1, h2) {
-			return false
-		}
-	}
-	return es1 == nil && es2 == nil
+	return es1.Corresponds_string(es2, string_equality)
+	// var h1, h2 e_string
+	// for es1 != nil && es2 != nil {
+	// 	h1, es1 = es1()
+	// 	h2, es2 = es2()
+	// 	if !string_equality(h1, h2) {
+	// 		return false
+	// 	}
+	// }
+	// return es1 == nil && es2 == nil
 }
 
 func (es String) AppendToSlice(s []e_string) []e_string {
@@ -155,4 +167,31 @@ func (es String) AppendToSlice(s []e_string) []e_string {
 func (es String) ToSlice(initialCapacity int) []e_string {
 	slice := make([]e_string, 0, initialCapacity)
 	return es.AppendToSlice(slice)
+}
+
+//// implementation of PartialFunction[int, e_string] ////
+
+func (es String) ApplyOrElse(index int, defaultValue func() e_string) e_string {
+	if index < 0 {
+		return defaultValue()
+	}
+	var h e_string
+	for es != nil {
+		h, es = es()
+		if index == 0 {
+			return h
+		}
+		index -= 1
+	}
+	return defaultValue()
+}
+
+func (es String) Apply(index int) (e_string, error) {
+	var err error
+	v := es.ApplyOrElse(index, func() e_string {
+		err = fmt.Errorf("index out of bounds: %v", index)
+		var zero e_string
+		return zero
+	})
+	return v, err
 }

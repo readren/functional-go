@@ -14,6 +14,34 @@ func (as AStream) FollowedBy(AStream) AStream { panic("This template line should
 // The first type parameter of the methods
 type a_type = someTypeA
 
+func (es EStream) Collected_a(f func(e_type) (bool, a_type)) AStream {
+	var e e_type
+	for es != nil {
+		e, es = es()
+		isIncluded, a := f(e)
+		if isIncluded {
+			return func() (a_type, AStream) {
+				return a, es.Collected_a(f)
+			}
+		}
+	}
+	return nil
+}
+
+func (es EStream) CollectedKEI_a(baseIndex int, f func(e e_type, index int) (bool, a_type)) AStream {
+	var e e_type
+	for es != nil {
+		e, es = es()
+		c, a := f(e, baseIndex)
+		if c {
+			return func() (a_type, AStream) {
+				return a, es.CollectedKEI_a(baseIndex+1, f)
+			}
+		}
+	}
+	return nil
+}
+
 func (es EStream) Mapped_a(f func(e_type) a_type) AStream {
 	if es == nil {
 		return nil
@@ -25,14 +53,39 @@ func (es EStream) Mapped_a(f func(e_type) a_type) AStream {
 	}
 }
 
-func (es EStream) Binded_a(f func(e_type) AStream) AStream {
+// KEI stands for knowing elements indexes
+func (es EStream) MappedKEI_a(indexBase int, f func(e e_type, index int) a_type) AStream {
+	if es == nil {
+		return nil
+	} else {
+		return func() (a_type, AStream) {
+			h, t := es()
+			return f(h, indexBase), t.MappedKEI_a(indexBase+1, f)
+		}
+	}
+}
+
+func (es EStream) Bound_a(f func(e_type) AStream) AStream {
 	if es == nil {
 		return nil
 	} else {
 		return func() (a_type, AStream) {
 			he, te := es()
 			ha, ta := f(he)()
-			return ha, ta.FollowedBy(te.Binded_a(f))
+			return ha, ta.FollowedBy(te.Bound_a(f))
+		}
+	}
+}
+
+// KEI stands for knowing elements indexes
+func (es EStream) BoundKEI_a(indexBase int, f func(e e_type, index int) AStream) AStream {
+	if es == nil {
+		return nil
+	} else {
+		return func() (a_type, AStream) {
+			he, te := es()
+			ha, ta := f(he, indexBase)()
+			return ha, ta.FollowedBy(te.BoundKEI_a(indexBase+1, f))
 		}
 	}
 }
@@ -53,4 +106,18 @@ func (es EStream) FoldRight_a(f func(e_type, a_type) a_type, z a_type) a_type {
 		h, t := es()
 		return f(h, t.FoldRight_a(f, z))
 	}
+}
+
+func (es EStream) Corresponds_a(as AStream, f func(e e_type, a a_type) bool) bool {
+	var e e_type
+	var a a_type
+	for es != nil && as != nil {
+		e, es = es()
+		a, as = as()
+		if !f(e, a) {
+			return false
+		}
+	}
+	return es == nil && as == nil
+
 }

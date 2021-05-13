@@ -1,8 +1,16 @@
 package templates
 
+import (
+	"fmt"
+)
+
 // DO NOT COPY contained lines - BEGIN. They exist to make the compiler happy.
 
 type someTypeE struct{}
+
+func (es1 EStream) Corresponds_e(es2 EStream, f func(e1 e_type, e2 e_type) bool) bool {
+	panic("This template line should have been removed")
+}
 
 // DO NOT COPY contained lines - END
 
@@ -54,6 +62,15 @@ func EStream_FromSet(m map[e_type]bool) EStream {
 
 func (es EStream) IsEmpty() bool {
 	return es == nil
+}
+
+func (es EStream) Size() int {
+	count := 0
+	for es != nil {
+		count += 1
+		_, es = es()
+	}
+	return count
 }
 
 func (es EStream) TakeWhile(indexBase int, p func(elem e_type, index int) bool) EStream {
@@ -134,15 +151,16 @@ func (es EStream) ForAny(p func(e_type) bool) bool {
 }
 
 func (es1 EStream) IsEqualTo(es2 EStream) bool {
-	var h1, h2 e_type
-	for es1 != nil && es2 != nil {
-		h1, es1 = es1()
-		h2, es2 = es2()
-		if !type_equality(h1, h2) {
-			return false
-		}
-	}
-	return es1 == nil && es2 == nil
+	return es1.Corresponds_e(es2, type_equality)
+	// var h1, h2 e_type
+	// for es1 != nil && es2 != nil {
+	// 	h1, es1 = es1()
+	// 	h2, es2 = es2()
+	// 	if !type_equality(h1, h2) {
+	// 		return false
+	// 	}
+	// }
+	// return es1 == nil && es2 == nil
 }
 
 func (es EStream) AppendToSlice(s []e_type) []e_type {
@@ -161,4 +179,31 @@ func (es EStream) AppendToSlice(s []e_type) []e_type {
 func (es EStream) ToSlice(initialCapacity int) []e_type {
 	slice := make([]e_type, 0, initialCapacity)
 	return es.AppendToSlice(slice)
+}
+
+//// implementation of PartialFunction[int, e_type] ////
+
+func (es EStream) ApplyOrElse(index int, defaultValue func() e_type) e_type {
+	if index < 0 {
+		return defaultValue()
+	}
+	var h e_type
+	for es != nil {
+		h, es = es()
+		if index == 0 {
+			return h
+		}
+		index -= 1
+	}
+	return defaultValue()
+}
+
+func (es EStream) Apply(index int) (e_type, error) {
+	var err error
+	v := es.ApplyOrElse(index, func() e_type {
+		err = fmt.Errorf("index out of bounds: %v", index)
+		var zero e_type
+		return zero
+	})
+	return v, err
 }

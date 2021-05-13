@@ -1,5 +1,7 @@
 package stream
 
+import "fmt"
+
 // The type of the elements in the stream
 type e_int = int
 
@@ -35,6 +37,7 @@ func Int_FromSlice(slice []e_int) Int {
 		}
 	}
 }
+
 func Int_FromSet(m map[e_int]bool) Int {
 	slice := make([]e_int, len(m))
 	for k := range m {
@@ -47,6 +50,15 @@ func Int_FromSet(m map[e_int]bool) Int {
 
 func (es Int) IsEmpty() bool {
 	return es == nil
+}
+
+func (es Int) Size() int {
+	count := 0
+	for es != nil {
+		count += 1
+		_, es = es()
+	}
+	return count
 }
 
 func (es Int) TakeWhile(indexBase int, p func(elem e_int, index int) bool) Int {
@@ -127,15 +139,16 @@ func (es Int) ForAny(p func(e_int) bool) bool {
 }
 
 func (es1 Int) IsEqualTo(es2 Int) bool {
-	var h1, h2 e_int
-	for es1 != nil && es2 != nil {
-		h1, es1 = es1()
-		h2, es2 = es2()
-		if !int_equality(h1, h2) {
-			return false
-		}
-	}
-	return es1 == nil && es2 == nil
+	return es1.Corresponds_int(es2, int_equality)
+	// var h1, h2 e_int
+	// for es1 != nil && es2 != nil {
+	// 	h1, es1 = es1()
+	// 	h2, es2 = es2()
+	// 	if !int_equality(h1, h2) {
+	// 		return false
+	// 	}
+	// }
+	// return es1 == nil && es2 == nil
 }
 
 func (es Int) AppendToSlice(s []e_int) []e_int {
@@ -154,4 +167,31 @@ func (es Int) AppendToSlice(s []e_int) []e_int {
 func (es Int) ToSlice(initialCapacity int) []e_int {
 	slice := make([]e_int, 0, initialCapacity)
 	return es.AppendToSlice(slice)
+}
+
+//// implementation of PartialFunction[int, e_int] ////
+
+func (es Int) ApplyOrElse(index int, defaultValue func() e_int) e_int {
+	if index < 0 {
+		return defaultValue()
+	}
+	var h e_int
+	for es != nil {
+		h, es = es()
+		if index == 0 {
+			return h
+		}
+		index -= 1
+	}
+	return defaultValue()
+}
+
+func (es Int) Apply(index int) (e_int, error) {
+	var err error
+	v := es.ApplyOrElse(index, func() e_int {
+		err = fmt.Errorf("index out of bounds: %v", index)
+		var zero e_int
+		return zero
+	})
+	return v, err
 }
