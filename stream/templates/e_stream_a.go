@@ -7,6 +7,7 @@ type someTypeA struct{}
 // The type of the stream whose elements are of type `a_type`
 type AStream func() (a_type, AStream)
 
+func AStream_Single(a a_type) AStream         { panic("This template line should have been removed") }
 func (as AStream) FollowedBy(AStream) AStream { panic("This template line should have been removed") }
 
 // DO NOT COPY contained lines - END
@@ -14,6 +15,7 @@ func (as AStream) FollowedBy(AStream) AStream { panic("This template line should
 // The first type parameter of the methods
 type a_type = someTypeA
 
+// Note: this method is partially lazy. Applying it traverses the first elements of this stream until the first included element inclusive.
 func (es EStream) Collected_a(f func(e_type) (bool, a_type)) AStream {
 	var e e_type
 	for es != nil {
@@ -28,6 +30,8 @@ func (es EStream) Collected_a(f func(e_type) (bool, a_type)) AStream {
 	return nil
 }
 
+// KEI stands for knowing elements indexes
+// Note: this method is partially lazy. Applying it traverses the first elements of this stream until the first included element inclusive.
 func (es EStream) CollectedKEI_a(baseIndex int, f func(e e_type, index int) (bool, a_type)) AStream {
 	var e e_type
 	for es != nil {
@@ -42,6 +46,7 @@ func (es EStream) CollectedKEI_a(baseIndex int, f func(e e_type, index int) (boo
 	return nil
 }
 
+// Note: this method is fully lazy. Applying it traverses no element of this stream.
 func (es EStream) Mapped_a(f func(e_type) a_type) AStream {
 	if es == nil {
 		return nil
@@ -54,6 +59,7 @@ func (es EStream) Mapped_a(f func(e_type) a_type) AStream {
 }
 
 // KEI stands for knowing elements indexes
+// Note: this method is fully lazy. Applying it traverses no element of this stream.
 func (es EStream) MappedKEI_a(indexBase int, f func(e e_type, index int) a_type) AStream {
 	if es == nil {
 		return nil
@@ -65,6 +71,21 @@ func (es EStream) MappedKEI_a(indexBase int, f func(e e_type, index int) a_type)
 	}
 }
 
+// Note: this method is fully lazy. Applying it traverses no element of this stream.
+func (es EStream) Scanned_a(z a_type, f func(a_type, e_type) a_type) AStream {
+	if es == nil {
+		return AStream_Single(z)
+	} else {
+		return func() (a_type, AStream) {
+			var e e_type
+			e, es = es()
+			a := f(z, e)
+			return a, es.Scanned_a(a, f)
+		}
+	}
+}
+
+// Note: this method is fully lazy. Applying it traverses no element of this stream.
 func (es EStream) Bound_a(f func(e_type) AStream) AStream {
 	if es == nil {
 		return nil
@@ -78,6 +99,7 @@ func (es EStream) Bound_a(f func(e_type) AStream) AStream {
 }
 
 // KEI stands for knowing elements indexes
+// Note: this method is fully lazy. Applying it traverses no element of this stream.
 func (es EStream) BoundKEI_a(indexBase int, f func(e e_type, index int) AStream) AStream {
 	if es == nil {
 		return nil
@@ -99,6 +121,7 @@ func (es EStream) FoldLeft_a(z a_type, f func(a_type, e_type) a_type) a_type {
 	return z
 }
 
+// CAUTION: this method is recursive and consumes stack space proportional to both, the stream size and the size of its elements. Use `FoldLeft` instead if possible.
 func (es EStream) FoldRight_a(f func(e_type, a_type) a_type, z a_type) a_type {
 	if es == nil {
 		return z
@@ -119,5 +142,4 @@ func (es EStream) Corresponds_a(as AStream, f func(e e_type, a a_type) bool) boo
 		}
 	}
 	return es == nil && as == nil
-
 }

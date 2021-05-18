@@ -64,15 +64,18 @@ func (es EStream) IsEmpty() bool {
 	return es == nil
 }
 
-func (es EStream) Size() int {
+// CAUTION: this method traverses all the elements of the stream. Avoid it if possible for long streams.
+func (es EStream) SizeAndLast() (int, e_type) {
 	count := 0
+	var e e_type
 	for es != nil {
 		count += 1
-		_, es = es()
+		e, es = es()
 	}
-	return count
+	return count, e
 }
 
+// Note: this method is almost lazy. Applying it only traverses the first element of this stream.
 func (es EStream) TakeWhile(indexBase int, p func(elem e_type, index int) bool) EStream {
 	if es == nil {
 		return nil
@@ -88,6 +91,14 @@ func (es EStream) TakeWhile(indexBase int, p func(elem e_type, index int) bool) 
 	}
 }
 
+// Note: this method is almost lazy. Applying it only traverses the first element of this stream.
+func (es EStream) Take(num int) EStream {
+	return es.TakeWhile(0, func(_ e_type, index int) bool {
+		return index < num
+	})
+}
+
+// Note: this method is partially lazy. Applying it traverses all the droped and the first non-droped elements of this stream.
 func (es EStream) DropWhile(indexBase int, p func(elem e_type, index int) bool) EStream {
 	for es != nil {
 		h, t := es()
@@ -100,29 +111,40 @@ func (es EStream) DropWhile(indexBase int, p func(elem e_type, index int) bool) 
 	return nil
 }
 
-func (es EStream) Filtered(p func(elem e_type) bool) EStream {
+// Note: this method is partially lazy. Applying it traverses all the droped and the first non-droped elements of this stream.
+func (es EStream) Drop(num int) EStream {
+	return es.DropWhile(0, func(_ e_type, index int) bool {
+		return index < num
+	})
+}
+
+// Note: this method is partially lazy. Applying it traverses the first excluded elements of this stream until the first included element inclusive.
+func (es EStream) Filter(p func(elem e_type) bool) EStream {
 	var h e_type
 	for es != nil {
 		h, es = es()
 		if p(h) {
 			return func() (e_type, EStream) {
-				return h, es.Filtered(p)
+				return h, es.Filter(p)
 			}
 		}
 	}
 	return nil
 }
 
+// Note: this method is fully lazy. Applying it traverses no element of this stream.
 func (es EStream) PrecededBy(a e_type) EStream {
 	return func() (e_type, EStream) {
 		return a, es
 	}
 }
 
+// Note: this method is fully lazy. Applying it traverses no element of this stream.
 func (es EStream) SuccedeedBy(a e_type) EStream {
 	return es.FollowedBy(EStream_Single(a))
 }
 
+// Note: this method is fully lazy. Applying it traverses no element of this stream.
 func (es1 EStream) FollowedBy(es2 EStream) EStream {
 	if es1 != nil {
 		return func() (e_type, EStream) {
@@ -183,6 +205,7 @@ func (es EStream) ToSlice(initialCapacity int) []e_type {
 
 //// implementation of PartialFunction[int, e_type] ////
 
+// CAUTION: this method traverses `index + 1` elements of this stream. Avoid it for long stream if possible.
 func (es EStream) ApplyOrElse(index int, defaultValue func() e_type) e_type {
 	if index < 0 {
 		return defaultValue()
@@ -198,6 +221,7 @@ func (es EStream) ApplyOrElse(index int, defaultValue func() e_type) e_type {
 	return defaultValue()
 }
 
+// CAUTION: this method traverses `index + 1` elements of this stream. Avoid it for long stream if possible.
 func (es EStream) Apply(index int) (e_type, error) {
 	var err error
 	v := es.ApplyOrElse(index, func() e_type {
