@@ -26,9 +26,9 @@ var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 	"stream": {
 		[]string{"eType"},
 		[]Template{
-			{"eType_stream", []string{}},
-			{"eType_stream_aType", []string{"aType"}},
-			{"eType_stream_aType_bType", []string{"aType", "bType"}},
+			{"eType__stream", []string{}},
+			{"eType__stream__aType", []string{"aType"}},
+			{"eType__stream__aType__bType", []string{"aType", "bType"}},
 		},
 		func(baseTypeArguments []TypeArgument) string {
 			elemsTypeName := baseTypeArguments[0].GetTypeName()
@@ -66,7 +66,8 @@ func (ta *TypeArgument) GetTypeName() string {
 	} else if nativeBasicTypeRegex.MatchString(ta.Type) {
 		return ta.Type
 	} else {
-		panic(fmt.Errorf("the `TypeArgument.TypeName` field is required when the `TypeArgument.Type` field is not a basic native type : the offender `TypeArgument` is %v", ta))
+		return BuildTypeName(ta.Type)
+		// panic(fmt.Errorf("the `TypeArgument.TypeName` field is required when the `TypeArgument.Type` field is not a basic native type : the offender `TypeArgument` is %v", ta))
 	}
 }
 

@@ -9,27 +9,34 @@ import (
 
 func main() {
 
-	workingDir, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
+	if false {
+		s := typeCtors.BuildTypeName("map[string][3]image.Point")
+		fmt.Println(s)
 
-	config := typeCtors.Config{
-		GeneratedPackageParentDir: fmt.Sprintf("%s/generated-package-parent-dir", workingDir),
-		GeneratedPackageName:      "functional",
-		TemplatesFolder:           fmt.Sprintf("%s/typectors", workingDir),
-		TypeInstantiationsArguments: []typeCtors.TypeIncarnationArguments{
-			{
-				TypeConstructorName: "stream",
-				BaseTypeArguments:   []typeCtors.TypeArgument{{Type: "int"}},
-				TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: [][]typeCtors.TypeArgument{
-					{{Type: "int"}},
-					{{Type: "bool"}, {Type: "int"}},
-					{{Type: "string"}, {Type: "bool"}},
+	} else {
+
+		workingDir, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+
+		config := typeCtors.Config{
+			GeneratedPackageParentDir: fmt.Sprintf("%s/generated-package-parent-dir", workingDir),
+			GeneratedPackageName:      "functional",
+			TemplatesFolder:           fmt.Sprintf("%s/typectors", workingDir),
+			TypeInstantiationsArguments: []typeCtors.TypeIncarnationArguments{
+				{
+					TypeConstructorName: "stream",
+					BaseTypeArguments:   []typeCtors.TypeArgument{{Type: "int"}},
+					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: [][]typeCtors.TypeArgument{
+						{{Type: "int"}},
+						{{Type: "bool"}, {Type: "int"}},
+						{{Type: "string"}, {Type: "bool"}},
+					},
 				},
 			},
-		},
-	}
+		}
 
-	typeCtors.GeneratePackage(config)
+		typeCtors.GeneratePackage(config)
+	}
 }
