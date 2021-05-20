@@ -1,3 +1,3 @@
-module github.com/readren/go-stream
+module github.com/readren/functional-go
 
 go 1.16
