@@ -1,6 +1,8 @@
 package functional
 
-// #exclude-section-begin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
+// #importAnchor
+
+// #excludeSectionBegin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
 
 // The first type parameter of the methods
 type aType = struct{}
@@ -16,7 +18,7 @@ func (as Stream_aType) FollowedBy(Stream_aType) Stream_aType {
 	panic("This template line should have been removed")
 }
 
-// #exclude-section-end
+// #excludeSectionEnd
 
 // Note: this method is partially lazy. Applying it traverses the first elements of this stream until the first included element inclusive.
 func (es Stream_eType) Collected__aType(f func(eType) (bool, aType)) Stream_aType {

@@ -1,6 +1,8 @@
 package functional
 
-// #exclude-section-begin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
+// #importAnchor
+
+// #excludeSectionBegin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
 
 // The second type parameter of the methods
 type bType = struct{}
@@ -17,7 +19,7 @@ func (bs Stream_bType) SucceddedBy(bType) Stream_bType {
 	panic("This template line should have been removed")
 }
 
-// #exclude-section-end
+// #excludeSectionEnd
 
 // Returns a stream of elements of type `map[aType][]bType` (map from `aType` to slices of `bType`) where the element at index `i` is the grouped accumulation of the first `i` elements of this stream.
 // In other words: Returns a stream of the same size than this stream, and whose element at index `i` is equivalent to `this.Take(i+1).GroupMap_aType_bType(accumulator, g)`, for all `i` between 0 and the size of this stream.

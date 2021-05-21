@@ -1,10 +1,12 @@
 package functional
 
+// #importAnchor
+
 import (
 	"fmt"
 )
 
-// #exclude-section-begin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
+// #excludeSectionBegin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
 
 // The type of the elements in the EStream
 type eType = struct{}
@@ -13,7 +15,7 @@ func (es1 Stream_eType) Corresponds__eType(es2 Stream_eType, f func(e1 eType, e2
 	panic("This template line should have been removed")
 }
 
-// #exclude-section-end
+// #excludeSectionEnd
 
 // The type of the stream whose elements are of type `eType`
 type Stream_eType func() (eType, Stream_eType)

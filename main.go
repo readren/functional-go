@@ -24,14 +24,14 @@ func main() {
 			GeneratedPackageParentDir: fmt.Sprintf("%s/generated-package-parent-dir", workingDir),
 			GeneratedPackageName:      "functional",
 			TemplatesFolder:           fmt.Sprintf("%s/typectors", workingDir),
-			TypeInstantiationsArguments: []typeCtors.TypeIncarnationArguments{
+			TypesDescriptors: []typeCtors.TypeDescriptor{
 				{
 					TypeConstructorName: "stream",
 					BaseTypeArguments:   []typeCtors.TypeArgument{{Type: "int"}},
-					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: [][]typeCtors.TypeArgument{
-						{{Type: "int"}},
+					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{
+						{{Type: "image.Point", PackagePath: "image"}},
 						{{Type: "bool"}, {Type: "int"}},
-						{{Type: "string"}, {Type: "bool"}},
+						{{Type: "string"}, {Type: "[]bool"}},
 					},
 				},
 			},
