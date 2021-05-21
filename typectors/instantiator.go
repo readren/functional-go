@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"reflect"
 	"regexp"
 )
 
@@ -37,13 +36,7 @@ var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 	},
 }
 
-//////////
-
-type Requirement struct {
-	TypeConstructorName string         `json:"typeCtor"`
-	BaseTypeArguments   []TypeArgument `json:"baseTArgs"`
-	MethodTypeArguments []TypeArgument `json:"methodTArgs"`
-}
+//// TypeArgument ////
 
 type TypeArgument struct {
 	// the actual type of this type argument expressed in the same way as for variable declarations. For example "int", or "[]image.Point"
@@ -52,6 +45,10 @@ type TypeArgument struct {
 	TypeName string
 	// the package where the type in the `Type` field is defined. This field is optional when the `Type` field has a basic native type like "int", but not "[]int" nor "image.Point".
 	PackagePath string
+}
+
+func (thisPtr *TypeArgument) IsEqual(otherPtr *TypeArgument) bool {
+	return thisPtr.Type == otherPtr.Type
 }
 
 var nativeBasicTypeRegex = regexp.MustCompile(`^\w+$`)
@@ -71,11 +68,43 @@ func (ta *TypeArgument) GetTypeName() string {
 	}
 }
 
+//// TypeArguments ////
+
+type TypeArguments []TypeArgument
+
+func (tas1 TypeArguments) IsEqual(tas2 TypeArguments) bool {
+	if len(tas1) != len(tas2) {
+		return false
+	}
+	for i, ta := range tas1 {
+		if !ta.IsEqual(&(tas2[i])) {
+			return false
+		}
+	}
+	return true
+}
+
+//// TemplateArguments ////
+
+type TemplateArguments struct {
+	TypeConstructorName string        `json:"typeCtor"`
+	BaseTypeArguments   TypeArguments `json:"baseTArgs"`
+	MethodTypeArguments TypeArguments `json:"methodTArgs"`
+}
+
+func (thisPtr *TemplateArguments) IsEqual(otherPtr *TemplateArguments) bool {
+	return thisPtr.TypeConstructorName == otherPtr.TypeConstructorName &&
+		thisPtr.BaseTypeArguments.IsEqual(otherPtr.BaseTypeArguments) &&
+		thisPtr.MethodTypeArguments.IsEqual(otherPtr.MethodTypeArguments)
+}
+
+////
+
 // Knows the arguments needed to incarnate a type.
 type TypeIncarnationArguments struct {
 	TypeConstructorName string
 	BaseTypeArguments   []TypeArgument
-	// Specifies for which type arguments are each polymorphic method instantiated. For example, if the template has a polymofphic method "foo" with one type parameter and a method "bar" with two type parameters; and this field value is [ [{"int"}], [{"Point", "image"}], [{"bool"},{"string"}] ]; then the "foo" method would be instanciated two times with type arguments "foo_int(..)" and "foo_Point(..)", and the "bar" method would be instantiated one time with type arguments "bar_bool_string(..)".
+	// Specifies for which type arguments are each polymorphic method instantiated. For example, if the template has a polymofphic method "foo" with one type parameter and a method "bar" with two type parameters; and this field value is [ [{"int"}], [{"Point", "image"}], [{"bool"},{"string"}] ]; then the "foo" method would be instanciated two times with type arguments "foo__int(..)" and "foo__Point(..)", and the "bar" method would be instantiated one time with type arguments "bar__bool__string(..)".
 	TypeArgumentsForWhichPolymorphicMethodsAreInstantiated [][]TypeArgument
 }
 
@@ -86,21 +115,16 @@ type Config struct {
 	TypeInstantiationsArguments []TypeIncarnationArguments
 }
 
-func checkError(err error, msg string) {
-	if err != nil {
-		panic(fmt.Errorf("%s : %w", msg, err))
-	}
-}
-
 type manager struct {
-	config                Config
-	tempDir               string
-	missingRequirements   requirementsSet
-	fulfilledRequirements requirementsSet
+	config  Config
+	tempDir string
+	// the set where the `TemplateArguments` of all the already parsed `#dependsOn` directives are accumulated
+	requestedDependencies setOfTemplateArgs
+	// the set that memorizes which template instantiations where already done
+	instantiatedDependencies setOfTemplateArgs
 }
 
 func GeneratePackage(config Config) {
-
 	workingDir, err := os.Getwd()
 	checkError(err, "unable to get the working directory")
 
@@ -110,27 +134,26 @@ func GeneratePackage(config Config) {
 	defer func() { os.Remove(tempDir) }()
 	fmt.Printf("temporary working directory: %s\n", tempDir)
 
-	var manager = manager{config, tempDir, requirementsSet{}, requirementsSet{}}
-	// instantiate all the templates specified in the `config`
+	var manager = manager{config, tempDir, setOfTemplateArgs{}, setOfTemplateArgs{}}
+	// Instantiate all the templates specified in the `config`
 	for _, tia := range config.TypeInstantiationsArguments {
 		manager.incarnateType(tia)
 	}
-
-	// instantiante the templates that are transitively required by the already instantiated templates
+	// Instantiate the templates pointed by all the "#dependsOn" directives contained in the already instantianted templates, that aren't already instantiated.
 	for {
-		missingRequirements := manager.missingRequirements.diff(&manager.fulfilledRequirements)
-		if len(missingRequirements) == 0 {
+		missingDependencies := manager.requestedDependencies.diff(manager.instantiatedDependencies)
+		if len(missingDependencies) == 0 {
 			break
 		}
-		manager.missingRequirements = make(requirementsSet, 0)
-		for _, mr := range missingRequirements {
+		manager.requestedDependencies = make(setOfTemplateArgs, 0)
+		for _, mr := range missingDependencies {
 			methodTypeArguments := append(make([][]TypeArgument, 0, 1), mr.MethodTypeArguments)
 			tia := TypeIncarnationArguments{mr.TypeConstructorName, mr.BaseTypeArguments, methodTypeArguments}
 			manager.incarnateType(tia)
 		}
 	}
 
-	// move the generated source files from temp directory to the generated package directory
+	// Move the generated source files from temp directory to the generated package directory
 	generatedPackageDir := fmt.Sprintf("%s/%s", config.GeneratedPackageParentDir, config.GeneratedPackageName)
 	existentSrcFiles, err := ioutil.ReadDir(generatedPackageDir)
 	checkError(err, fmt.Sprintf("unable to read the files inside the \"%s\" directory", generatedPackageDir))
@@ -163,8 +186,8 @@ type codeFile struct {
 	content  []byte
 }
 
-// Used to obtain the json string after the "#requires" directives
-var requirementRegex = regexp.MustCompile(`(?m)#requires\s*(.+)$`)
+// Used to obtain the json string after the "#dependesOn" directives
+var dependsOnDirectiveRegex = regexp.MustCompile(`(?m)#dependsOn\s*(.+)$`)
 
 // Generates a source file based on this template with the specified type arguments
 func (template *Template) instantiate(typeConstructorName string, typeConstructor TypeConstructor, baseTypeArguments []TypeArgument, methodTypeArguments []TypeArgument, managerPtr *manager) {
@@ -192,19 +215,19 @@ func (template *Template) instantiate(typeConstructorName string, typeConstructo
 		codeFile.replaceTypeParameterWithTypeArgument(typeParameterName, typeArgument)
 	}
 
-	// Memorize the requirement fulfilled by this template instantiation
-	managerPtr.fulfilledRequirements.add(&Requirement{typeConstructorName, baseTypeArguments, methodTypeArguments})
+	// Add this template instantiation to the set of template instantiations that are already done
+	managerPtr.instantiatedDependencies.add(&TemplateArguments{typeConstructorName, baseTypeArguments, methodTypeArguments})
 
-	// Obtain the requirements needed by this template. Note that given the type parameters were replaced abobe by the actual type arguments, the parsed requirements directives contain actual types.
-	requirementsMatchs := requirementRegex.FindAllSubmatch(codeFile.content, -1)
-	for _, rm := range requirementsMatchs {
-		fmt.Printf("requirementMatch: %s\n", rm[1])
-		var requirement Requirement
-		checkError(json.Unmarshal(rm[1], &requirement), fmt.Sprintf("unable to parse the requirement %s", rm[1]))
-		managerPtr.missingRequirements.add(&requirement)
+	// Obtain the dependencies on template instantiations required by this template. Note that given the type parameters were already replaced by the actual type arguments, the parsed `#dependsOn` directives contain actual types.
+	dependenciesMatchs := dependsOnDirectiveRegex.FindAllSubmatch(codeFile.content, -1)
+	for _, rm := range dependenciesMatchs {
+		fmt.Printf("#dependsOn matchs: %s\n", rm[1]) // TODO remove this line
+		var dependency TemplateArguments
+		checkError(json.Unmarshal(rm[1], &dependency), fmt.Sprintf("unable to parse the directive: #dependsOn %s", rm[1]))
+		managerPtr.requestedDependencies.add(&dependency)
 	}
 
-	// Remove the excluded section. This should be done after the requirements obtention because the excluded section may contain requirement directives.
+	// Remove the excluded section. This should be done after the dependencies obtention because the excluded section may contain `#dependsOn` directives.
 	codeFile.content = regexp.MustCompile(`(?m)^.*#exclude-section-begin(.|\n|\r)*#exclude-section-end.*\n`).ReplaceAll(codeFile.content, []byte{})
 
 	// insert an import clause with the dependencies
@@ -228,33 +251,8 @@ func (cfp *codeFile) replaceTypeParameterWithTypeArgument(typeParameter string, 
 	cfp.fileName = identifierFragmentRegex.ReplaceAllString(cfp.fileName, identifierFragmentReplacement)
 }
 
-type requirementsSet []Requirement
-
-func (rsPtr *requirementsSet) add(rPtr *Requirement) bool {
-	if rsPtr.contains(rPtr) {
-		return false
-	} else {
-		*rsPtr = append(*rsPtr, *rPtr)
-		return true
+func checkError(err error, msg string) {
+	if err != nil {
+		panic(fmt.Errorf("%s : %w", msg, err))
 	}
-}
-
-func (rsPtr *requirementsSet) contains(rPtr *Requirement) bool {
-	for _, r := range *rsPtr {
-		if reflect.DeepEqual(r, *rPtr) {
-			return true
-		}
-	}
-	return false
-}
-
-// Gives a new `requirementSet` that contains all the requirements that are contained by this `requirementSet` and not contained by the other `requirementSet`.
-func (thisPtr *requirementsSet) diff(otherPtr *requirementsSet) requirementsSet {
-	newRs := make(requirementsSet, 0, len(*thisPtr))
-	for _, r := range *thisPtr {
-		if !otherPtr.contains(&r) {
-			newRs.add(&r)
-		}
-	}
-	return newRs
 }

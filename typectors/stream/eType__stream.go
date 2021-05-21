@@ -9,7 +9,7 @@ import (
 // The type of the elements in the EStream
 type eType = struct{}
 
-func (es1 Stream_eType) Corresponds_eType(es2 Stream_eType, f func(e1 eType, e2 eType) bool) bool {
+func (es1 Stream_eType) Corresponds__eType(es2 Stream_eType, f func(e1 eType, e2 eType) bool) bool {
 	panic("This template line should have been removed")
 }
 
@@ -42,14 +42,6 @@ func Stream_eType__FromSlice(slice []eType) Stream_eType {
 			return slice[0], Stream_eType__FromSlice(slice[1:])
 		}
 	}
-}
-
-func Stream_eType__FromSet(m map[eType]bool) Stream_eType {
-	slice := make([]eType, len(m))
-	for k := range m {
-		slice = append(slice, k)
-	}
-	return Stream_eType__FromSlice(slice)
 }
 
 ////
@@ -166,9 +158,9 @@ func (es Stream_eType) ForAny(p func(eType) bool) bool {
 	})
 }
 
-// #requires {"typeCtor":"stream", "baseTArgs": [{"type":"eType"}], "methodTArgs": [{"type":"eType"}]}
+// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"eType"}], "methodTArgs": [{"type":"eType"}]}
 func (es1 Stream_eType) IsEqualTo(es2 Stream_eType, elemEquality func(eType, eType) bool) bool {
-	return es1.Corresponds_eType(es2, elemEquality)
+	return es1.Corresponds__eType(es2, elemEquality)
 }
 
 func (es Stream_eType) AppendToSlice(s []eType) []eType {
