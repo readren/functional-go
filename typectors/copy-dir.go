@@ -11,7 +11,7 @@ import (
 )
 
 func copyDirectory(sourceRoot string, destinationRoot string) error {
-	fmt.Print("Generated source files: ")
+	fmt.Println("Generated source files:")
 	return filepath.WalkDir(sourceRoot, func(source string, entry fs.DirEntry, err error) error {
 		if err == nil {
 			relativePath := strings.Replace(source, sourceRoot, "", 1)

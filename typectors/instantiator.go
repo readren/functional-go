@@ -20,7 +20,7 @@ type TypeConstructor struct {
 	// Every type constructor definition is split in many templates each of them containing all the methods that have the same number of type parameters. This field contains said templates indexed by the number of type parameters.
 	// The purpose of this sepparation is to avoid the need to parse the go source files.
 	Templates       []Template
-	TypeNameBuilder func(baseTypeArguments []TypeArgument) string
+	TypeNameBuilder func(baseTypeArguments TypeArguments) string
 }
 
 var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor{
@@ -31,7 +31,7 @@ var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 			{"eType__stream__aType", []string{"aType"}},
 			{"eType__stream__aType__bType", []string{"aType", "bType"}},
 		},
-		func(baseTypeArguments []TypeArgument) string {
+		func(baseTypeArguments TypeArguments) string {
 			elemsTypeName := baseTypeArguments[0].GetTypeName()
 			return fmt.Sprintf("Stream_%s", elemsTypeName)
 		},
@@ -107,7 +107,7 @@ func (thisPtr *TemplateArguments) IsEqual(otherPtr *TemplateArguments) bool {
 // Knows the arguments needed to incarnate a type.
 type TypeDescriptor struct {
 	TypeConstructorName string
-	BaseTypeArguments   []TypeArgument
+	BaseTypeArguments   TypeArguments
 	// Specifies for which type arguments are each polymorphic method instantiated. For example, if the type constructor templates had the polymofphic the methods "foo", with one type parameter, and "bar", with two type parameters; and this field value were [ [{"int"}], [{"Point", "image"}], [{"bool"},{"string"}] ]; then the "foo" method would be instanciated two times, the first with type argument "int" ("foo__int(..)") and the second with type argument "image.Point" ("foo__imagePoint(..)"); and the "bar" method would be instantiated one time with the type arguments "bool" and "string" ("bar__bool__string(..)").
 	TypeArgumentsForWhichPolymorphicMethodsAreInstantiated []TypeArguments
 }
@@ -254,7 +254,7 @@ var importAnchorRegex = regexp.MustCompile(`(?m)^.*#importAnchor\s.*$`)
 var startOfFuncsWithNoInternalDependantsRegex = regexp.MustCompile(`(?m)^.*#startOfFuncsWithNoInternalDependants(.|\s)*`)
 
 // Generates a source file based on this template with the specified type arguments
-func (template *Template) instantiate(typeConstructorName string, typeConstructor TypeConstructor, baseTypeArguments []TypeArgument, methodTypeArguments []TypeArgument, managerPtr *manager) {
+func (template *Template) instantiate(typeConstructorName string, typeConstructor TypeConstructor, baseTypeArguments TypeArguments, methodTypeArguments TypeArguments, managerPtr *manager) {
 
 	templateSrcFile := fmt.Sprintf("%s/%s/%s.go", managerPtr.config.TemplatesFolder, typeConstructorName, template.FileName)
 	source, err := ioutil.ReadFile(templateSrcFile)

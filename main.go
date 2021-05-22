@@ -27,7 +27,7 @@ func main() {
 			TypesDescriptors: []typeCtors.TypeDescriptor{
 				{
 					TypeConstructorName: "stream",
-					BaseTypeArguments:   []typeCtors.TypeArgument{{Type: "int"}},
+					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}},
 					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{
 						{{Type: "image.Point", PackagePath: "image"}},
 						{{Type: "bool"}, {Type: "int"}},
