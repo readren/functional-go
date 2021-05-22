@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -133,10 +134,10 @@ func GeneratePackage(config Config) {
 	workingDir, err := os.Getwd()
 	checkError(err, "unable to get the working directory")
 
-	temporaryDirectoryParent := fmt.Sprintf("%s/temp", workingDir)
+	temporaryDirectoryParent := filepath.Join(workingDir, "temp")
 	tempDir, err := ioutil.TempDir(temporaryDirectoryParent, "instantiation-*")
 	checkError(err, fmt.Sprintf("unable to create a temporary directory inside the directory \"%s\"", temporaryDirectoryParent))
-	defer func() { os.Remove(tempDir) }()
+	defer func() { os.RemoveAll(tempDir) }()
 	fmt.Printf("temporary working directory: %s\n", tempDir)
 
 	var manager = manager{config, tempDir, map[string]TypeArgument{}, setOfTemplateArgs{}, setOfTemplateArgs{}, false}
@@ -161,16 +162,9 @@ func GeneratePackage(config Config) {
 		}
 	}
 
-	// Move the generated source files from temp directory to the generated package directory
-	generatedPackageDir := fmt.Sprintf("%s/%s", config.GeneratedPackageParentDir, config.GeneratedPackageName)
-	existentSrcFiles, err := ioutil.ReadDir(generatedPackageDir)
-	checkError(err, fmt.Sprintf("unable to read the files inside the \"%s\" directory", generatedPackageDir))
-
-	fmt.Print("Existent source files: ")
-	for _, e := range existentSrcFiles {
-		fmt.Printf("%s - ", e.Name())
-	}
-	fmt.Println()
+	// Move the generated source files from temporary directory to the one specified in the `Config`.
+	generatedPackageDir := filepath.Join(config.GeneratedPackageParentDir, config.GeneratedPackageName)
+	checkError(copyDirectory(tempDir, generatedPackageDir), fmt.Sprintf(`unable to copy the generated files from the temporary directory to the destination "%s"`, generatedPackageDir))
 }
 
 // Groups all the `TypeArgument` instances contained in all the instances of `TypeDescriptor`, discriminating by the `Type` field and reducing the other fields to the most complete occurrence.
@@ -278,7 +272,7 @@ func (template *Template) instantiate(typeConstructorName string, typeConstructo
 	// Obtain the external dependencies pointed by the `#usesExternalPackage` directives.
 	externalDependenciesMatchs := usesExternalPackageRegex.FindAllSubmatch(codeFile.content, -1)
 	for _, match := range externalDependenciesMatchs {
-		fmt.Printf("#usesExternalPackage match: %s\n", match[1]) // TODO remove this line
+		// fmt.Printf("#usesExternalPackage match: %s\n", match[1]) // TODO remove this line
 		var ed = externalDependency{}
 		checkError(json.Unmarshal(match[1], &ed), fmt.Sprintf("unable to parse the directive: #usesExternalPackage %s", match[1]))
 		externalDependencies[ed.Path] = ed.Alias
@@ -307,7 +301,7 @@ func (template *Template) instantiate(typeConstructorName string, typeConstructo
 	// Collect the dependencies on template instantiations required by this template. Note that given the type parameters were already replaced by the actual type arguments, the parsed `#dependsOn` directives contain actual types.
 	internalDependenciesMatchs := dependsOnDirectiveRegex.FindAllSubmatch(codeFile.content, -1)
 	for _, match := range internalDependenciesMatchs {
-		fmt.Printf("#dependsOn match: %s\n", match[1]) // TODO remove this line
+		// fmt.Printf("#dependsOn match: %s\n", match[1]) // TODO remove this line
 		var internalDependency TemplateArguments
 		checkError(json.Unmarshal(match[1], &internalDependency), fmt.Sprintf("unable to parse the directive: #dependsOn %s", match[1]))
 		managerPtr.normalizeTemplateArguments(&internalDependency)
