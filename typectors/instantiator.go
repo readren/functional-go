@@ -44,6 +44,8 @@ type TypeArgument struct {
 	Type string
 	// the package where the type in the `Type` field is defined. This field is optional when the `Type` field has a basic native type like "int", but not "[]int" nor "image.Point".
 	PackagePath string
+	// the alias of the package. This field is considered only when the `PackagePath` field is defined, and its default value is the last segment of the package path.
+	PackageAlias string
 	// the name to associate to the type in the `Type` field. There should be a one to one relationshipt between types and type names. This field is optional when the `Type` field has a basic native type like "int", but not "[]int" nor "image.Point".
 	TypeName string
 }
@@ -123,7 +125,8 @@ type manager struct {
 	// the set where the `TemplateArguments` of all the already parsed `#dependsOn` directives are accumulated
 	requestedDependencies setOfTemplateArgs
 	// the set that memorizes which template instantiations where already done
-	instantiatedDependencies setOfTemplateArgs
+	instantiatedDependencies                 setOfTemplateArgs
+	funcsWithNoInternalDependantsAreExcluded bool
 }
 
 func GeneratePackage(config Config) {
@@ -136,14 +139,15 @@ func GeneratePackage(config Config) {
 	defer func() { os.Remove(tempDir) }()
 	fmt.Printf("temporary working directory: %s\n", tempDir)
 
-	var manager = manager{config, tempDir, map[string]TypeArgument{}, setOfTemplateArgs{}, setOfTemplateArgs{}}
+	var manager = manager{config, tempDir, map[string]TypeArgument{}, setOfTemplateArgs{}, setOfTemplateArgs{}, false}
 	manager.groupAllTypeArgumentsByType()
 
 	// Instantiate all the templates specified in the `config`
 	for _, tia := range config.TypesDescriptors {
 		manager.incarnateType(tia)
 	}
-	// Instantiate the templates pointed by all the "#dependsOn" directives contained in the already instantianted templates, that aren't already instantiated.
+	manager.funcsWithNoInternalDependantsAreExcluded = true
+	// Instantiate the templates pointed by all the "#dependsOn" directives contained in the instantianted templates, that aren't already instantiated.
 	for {
 		missingDependencies := manager.requestedDependencies.diff(manager.instantiatedDependencies)
 		if len(missingDependencies) == 0 {
@@ -192,11 +196,15 @@ func (managerPtr *manager) registerAndNormalizeTypeArgument(ta TypeArgument) Typ
 	mostCompleteTa, found := managerPtr.allDistinctTypeArguments[ta.Type]
 	if found {
 		if mostCompleteTa.PackagePath != "" && ta.PackagePath != "" && mostCompleteTa.PackagePath != ta.PackagePath ||
+			mostCompleteTa.PackageAlias != "" && ta.PackageAlias != "" && mostCompleteTa.PackageAlias != ta.PackageAlias ||
 			mostCompleteTa.TypeName != "" && ta.TypeName != "" && mostCompleteTa.TypeName != ta.TypeName {
 			panic(fmt.Errorf(`inconsistent type attributes between two type arguments: "%v" and "%v"`, mostCompleteTa, ta))
 		}
 		if mostCompleteTa.PackagePath == "" && ta.PackagePath != "" {
 			mostCompleteTa.PackagePath = ta.PackagePath
+		}
+		if mostCompleteTa.PackageAlias == "" && ta.PackageAlias != "" {
+			mostCompleteTa.PackageAlias = ta.PackageAlias
 		}
 		if mostCompleteTa.TypeName == "" && ta.TypeName != "" {
 			mostCompleteTa.TypeName = ta.TypeName
@@ -239,10 +247,17 @@ type codeFile struct {
 	content  []byte
 }
 
+type externalDependency struct {
+	Path  string
+	Alias string
+}
+
 // Used to obtain the json string after the "#dependesOn" directives
 var dependsOnDirectiveRegex = regexp.MustCompile(`(?m)#dependsOn\s*(.+)$`)
+var usesExternalPackageRegex = regexp.MustCompile(`(?m)#usesExternalPackage\s*(.+)$`)
 var excludeSectionRegex = regexp.MustCompile(`(?m)^.*#excludeSectionBegin\s(.|\n|\r)*#excludeSectionEnd\s.*\n`)
 var importAnchorRegex = regexp.MustCompile(`(?m)^.*#importAnchor\s.*$`)
+var startOfFuncsWithNoInternalDependantsRegex = regexp.MustCompile(`(?m)^.*#startOfFuncsWithNoInternalDependants(.|\s)*`)
 
 // Generates a source file based on this template with the specified type arguments
 func (template *Template) instantiate(typeConstructorName string, typeConstructor TypeConstructor, baseTypeArguments []TypeArgument, methodTypeArguments []TypeArgument, managerPtr *manager) {
@@ -252,12 +267,27 @@ func (template *Template) instantiate(typeConstructorName string, typeConstructo
 	checkError(err, fmt.Sprintf("unable to load the template source file %s", templateSrcFile))
 	codeFile := codeFile{template.FileName, source}
 
+	if managerPtr.funcsWithNoInternalDependantsAreExcluded {
+		// Remove the section after the `#startOfFuncsWithNoInternalDependants` directive.
+		codeFile.content = startOfFuncsWithNoInternalDependantsRegex.ReplaceAll(codeFile.content, []byte{})
+	}
+
 	// set where all the external dependencies required by this template instantiation are collected
-	externalDependencies := make(map[string]bool)
+	externalDependencies := make(map[string]string)
+
+	// Obtain the external dependencies pointed by the `#usesExternalPackage` directives.
+	externalDependenciesMatchs := usesExternalPackageRegex.FindAllSubmatch(codeFile.content, -1)
+	for _, match := range externalDependenciesMatchs {
+		fmt.Printf("#usesExternalPackage match: %s\n", match[1]) // TODO remove this line
+		var ed = externalDependency{}
+		checkError(json.Unmarshal(match[1], &ed), fmt.Sprintf("unable to parse the directive: #usesExternalPackage %s", match[1]))
+		externalDependencies[ed.Path] = ed.Alias
+	}
+
 	// replace base type parameters with the actual type arguments
 	for typeParameterIndex, typeArgument := range baseTypeArguments {
 		if len(typeArgument.PackagePath) > 0 {
-			externalDependencies[typeArgument.PackagePath] = true
+			externalDependencies[typeArgument.PackagePath] = typeArgument.PackageAlias
 		}
 		typeParameterName := typeConstructor.BaseTypeParameters[typeParameterIndex]
 		codeFile.replaceTypeParameterWithTypeArgument(typeParameterName, typeArgument)
@@ -265,7 +295,7 @@ func (template *Template) instantiate(typeConstructorName string, typeConstructo
 	// replace polymorphic methods type parameters with the actual type arguments
 	for typeParameterIndex, typeArgument := range methodTypeArguments {
 		if len(typeArgument.PackagePath) > 0 {
-			externalDependencies[typeArgument.PackagePath] = true
+			externalDependencies[typeArgument.PackagePath] = typeArgument.PackageAlias
 		}
 		typeParameterName := template.PolymorphicMethodsTypeParameters[typeParameterIndex]
 		codeFile.replaceTypeParameterWithTypeArgument(typeParameterName, typeArgument)
@@ -276,10 +306,10 @@ func (template *Template) instantiate(typeConstructorName string, typeConstructo
 
 	// Collect the dependencies on template instantiations required by this template. Note that given the type parameters were already replaced by the actual type arguments, the parsed `#dependsOn` directives contain actual types.
 	internalDependenciesMatchs := dependsOnDirectiveRegex.FindAllSubmatch(codeFile.content, -1)
-	for _, rm := range internalDependenciesMatchs {
-		fmt.Printf("#dependsOn matchs: %s\n", rm[1]) // TODO remove this line
+	for _, match := range internalDependenciesMatchs {
+		fmt.Printf("#dependsOn match: %s\n", match[1]) // TODO remove this line
 		var internalDependency TemplateArguments
-		checkError(json.Unmarshal(rm[1], &internalDependency), fmt.Sprintf("unable to parse the directive: #dependsOn %s", rm[1]))
+		checkError(json.Unmarshal(match[1], &internalDependency), fmt.Sprintf("unable to parse the directive: #dependsOn %s", match[1]))
 		managerPtr.normalizeTemplateArguments(&internalDependency)
 		managerPtr.requestedDependencies.add(&internalDependency)
 	}
@@ -291,10 +321,15 @@ func (template *Template) instantiate(typeConstructorName string, typeConstructo
 	var sb = strings.Builder{}
 	if len(externalDependencies) > 0 {
 		sb.WriteString("import (\n")
-		for ed := range externalDependencies {
+		for ed, alias := range externalDependencies {
 			sb.WriteRune('\t')
+			if alias != "" {
+				sb.WriteString(alias)
+				sb.WriteRune('\t')
+			}
+			sb.WriteRune('"')
 			sb.WriteString(ed)
-			sb.WriteRune('\n')
+			sb.WriteString("\"\n")
 		}
 		sb.WriteString(")")
 	}
