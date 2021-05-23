@@ -1,11 +1,8 @@
-package functional
+package fung
 
 // #importAnchor
 
 // #excludeSectionBegin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
-
-// The second type parameter of the methods
-type bType = struct{}
 
 // The type of the stream whose elements are of type `aType`
 type Stream_bType func() (bType, Stream_bType)
@@ -25,7 +22,7 @@ func (bs Stream_bType) SucceddedBy(bType) Stream_bType {
 // Returns a stream of elements of type `map[aType][]bType` (map from `aType` to slices of `bType`) where the element at index `i` is the grouped accumulation of the first `i` elements of this stream.
 // In other words: Returns a stream of the same size than this stream, and whose element at index `i` is equivalent to `this.Take(i+1).GroupMap_aType_bType(accumulator, g)`, for all `i` between 0 and the size of this stream.
 // Note: this method is fully lazy. Applying it traverses no element of this stream.
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"map[aType][]bType", "typeName":"mapFrom_aType_to_slice_bType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"map[aType][]bType", "typeName":"mapFrom_aType_to_slice_bType"}]}
 func (es Stream_eType) GroupMapped__aType__bType(accumulator map[aType][]bType, g func(elem eType) (key aType, value bType)) Stream_mapFrom_aType_to_slice_bType {
 	if es == nil {
 		return nil
@@ -67,8 +64,8 @@ func (es Stream_eType) GroupMapReduce__aType__bType(accumulator map[aType]bType,
 	return accumulator
 }
 
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"aType"}]}
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"bType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"bType"}]}
 func (es Stream_eType) Combined__aType__bType(as Stream_aType, indexBase int, f func(e eType, a aType, index int) bType) Stream_bType {
 	if es == nil || as == nil {
 		return nil

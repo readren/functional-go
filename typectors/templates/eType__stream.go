@@ -1,4 +1,4 @@
-package functional
+package fung
 
 // #importAnchor
 
@@ -7,7 +7,6 @@ package functional
 import "fmt"
 
 // The type of the elements in the EStream
-type eType = struct{}
 
 func (es1 Stream_eType) Corresponds__eType(es2 Stream_eType, f func(e1 eType, e2 eType) bool) bool {
 	panic("This template line should have been removed")
@@ -178,7 +177,7 @@ func (es Stream_eType) ForAny(p func(eType) bool) bool {
 	})
 }
 
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"eType"}], "methodTArgs": [{"type":"eType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"eType"}], "methodTArgs": [{"type":"eType"}]}
 func (es1 Stream_eType) IsEqualTo(es2 Stream_eType, elemEquality func(eType, eType) bool) bool {
 	return es1.Corresponds__eType(es2, elemEquality)
 }

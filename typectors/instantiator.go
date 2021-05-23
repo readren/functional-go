@@ -24,16 +24,48 @@ type TypeConstructor struct {
 }
 
 var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor{
-	"stream": {
+	"Stream": {
 		[]string{"eType"},
 		[]Template{
-			{"eType__stream", []string{}},
-			{"eType__stream__aType", []string{"aType"}},
-			{"eType__stream__aType__bType", []string{"aType", "bType"}},
+			{"eType__Stream", []string{}},
+			{"eType__Stream__aType", []string{"aType"}},
+			{"eType__Stream__aType__bType", []string{"aType", "bType"}},
 		},
 		func(baseTypeArguments TypeArguments) string {
 			elemsTypeName := baseTypeArguments[0].GetTypeName()
 			return fmt.Sprintf("Stream_%s", elemsTypeName)
+		},
+	},
+	"ValiResu": {
+		[]string{"sType"},
+		[]Template{
+			{"sType__ValiResu", []string{}},
+			{"sType__ValiResu__aType", []string{"aType"}},
+		},
+		func(baseTypeArguments TypeArguments) string {
+			elemsTypeName := baseTypeArguments[0].GetTypeName()
+			return fmt.Sprintf("ValiResu_%s", elemsTypeName)
+		},
+	},
+	"Validate": {
+		[]string{"sType"},
+		[]Template{
+			{"sType__Validate", []string{}},
+			{"sType__Validate__aType", []string{"aType"}},
+		},
+		func(baseTypeArguments TypeArguments) string {
+			elemsTypeName := baseTypeArguments[0].GetTypeName()
+			return fmt.Sprintf("Validate_%s", elemsTypeName)
+		},
+	},
+	"Try": {
+		[]string{"sType"},
+		[]Template{
+			{"sType__Try", []string{}},
+		},
+		func(baseTypeArguments TypeArguments) string {
+			elemsTypeName := baseTypeArguments[0].GetTypeName()
+			return fmt.Sprintf("Try_%s", elemsTypeName)
 		},
 	},
 }
@@ -139,6 +171,9 @@ func GeneratePackage(config Config) {
 	checkError(err, fmt.Sprintf("unable to create a temporary directory inside the directory \"%s\"", temporaryDirectoryParent))
 	defer func() { os.RemoveAll(tempDir) }()
 	fmt.Printf("temporary working directory: %s\n", tempDir)
+
+	comonSrcFile := filepath.Join(config.TemplatesFolder, "common.go")
+	checkError(copyFile(comonSrcFile, filepath.Join(tempDir, "common.go")), fmt.Sprintf(`unable to copy the "%s" file to the temporary directory`, comonSrcFile))
 
 	var manager = manager{config, tempDir, map[string]TypeArgument{}, setOfTemplateArgs{}, setOfTemplateArgs{}, false}
 	manager.groupAllTypeArgumentsByType()
@@ -256,7 +291,7 @@ var startOfFuncsWithNoInternalDependantsRegex = regexp.MustCompile(`(?m)^.*#star
 // Generates a source file based on this template with the specified type arguments
 func (template *Template) instantiate(typeConstructorName string, typeConstructor TypeConstructor, baseTypeArguments TypeArguments, methodTypeArguments TypeArguments, managerPtr *manager) {
 
-	templateSrcFile := fmt.Sprintf("%s/%s/%s.go", managerPtr.config.TemplatesFolder, typeConstructorName, template.FileName)
+	templateSrcFile := fmt.Sprintf("%s/%s.go", managerPtr.config.TemplatesFolder, template.FileName)
 	source, err := ioutil.ReadFile(templateSrcFile)
 	checkError(err, fmt.Sprintf("unable to load the template source file %s", templateSrcFile))
 	codeFile := codeFile{template.FileName, source}

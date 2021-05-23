@@ -1,11 +1,8 @@
-package functional
+package fung
 
 // #importAnchor
 
 // #excludeSectionBegin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
-
-// The first type parameter of the methods
-type aType = struct{}
 
 // The type of the stream whose elements are of type `aType`
 type Stream_aType func() (aType, Stream_aType)
@@ -19,7 +16,7 @@ func (as Stream_aType) FollowedBy(Stream_aType) Stream_aType {
 
 // #excludeSectionEnd
 
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"aType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) Corresponds__aType(as Stream_aType, f func(e eType, a aType) bool) bool {
 	var e eType
 	var a aType
@@ -36,7 +33,7 @@ func (es Stream_eType) Corresponds__aType(as Stream_aType, f func(e eType, a aTy
 // #startOfFuncsWithNoInternalDependants
 
 // Note: this method is partially lazy. Applying it traverses the first elements of this stream until the first included element inclusive.
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"aType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) Collected__aType(f func(eType) (bool, aType)) Stream_aType {
 	var e eType
 	for es != nil {
@@ -53,7 +50,7 @@ func (es Stream_eType) Collected__aType(f func(eType) (bool, aType)) Stream_aTyp
 
 // KEI stands for knowing elements indexes
 // Note: this method is partially lazy. Applying it traverses the first elements of this stream until the first included element inclusive.
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"aType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) CollectedKEI__aType(baseIndex int, f func(e eType, index int) (bool, aType)) Stream_aType {
 	var e eType
 	for es != nil {
@@ -69,7 +66,7 @@ func (es Stream_eType) CollectedKEI__aType(baseIndex int, f func(e eType, index 
 }
 
 // Note: this method is fully lazy. Applying it traverses no element of this stream.
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"aType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) Mapped__aType(f func(eType) aType) Stream_aType {
 	if es == nil {
 		return nil
@@ -83,7 +80,7 @@ func (es Stream_eType) Mapped__aType(f func(eType) aType) Stream_aType {
 
 // KEI stands for knowing elements indexes
 // Note: this method is fully lazy. Applying it traverses no element of this stream.
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"aType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) MappedKEI__aType(indexBase int, f func(e eType, index int) aType) Stream_aType {
 	if es == nil {
 		return nil
@@ -96,7 +93,7 @@ func (es Stream_eType) MappedKEI__aType(indexBase int, f func(e eType, index int
 }
 
 // Note: this method is fully lazy. Applying it traverses no element of this stream.
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"aType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) Scanned__aType(z aType, f func(aType, eType) aType) Stream_aType {
 	if es == nil {
 		return Stream_aType__Single(z)
@@ -111,7 +108,7 @@ func (es Stream_eType) Scanned__aType(z aType, f func(aType, eType) aType) Strea
 }
 
 // Note: this method is fully lazy. Applying it traverses no element of this stream.
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"aType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) Bound__aType(f func(eType) Stream_aType) Stream_aType {
 	if es == nil {
 		return nil
@@ -126,7 +123,7 @@ func (es Stream_eType) Bound__aType(f func(eType) Stream_aType) Stream_aType {
 
 // KEI stands for knowing elements indexes
 // Note: this method is fully lazy. Applying it traverses no element of this stream.
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"aType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) BoundKEI__aType(indexBase int, f func(e eType, index int) Stream_aType) Stream_aType {
 	if es == nil {
 		return nil
@@ -139,7 +136,7 @@ func (es Stream_eType) BoundKEI__aType(indexBase int, f func(e eType, index int)
 	}
 }
 
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"aType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) FoldLeft__aType(z aType, f func(aType, eType) aType) aType {
 	var h eType
 	for es != nil {
@@ -150,7 +147,7 @@ func (es Stream_eType) FoldLeft__aType(z aType, f func(aType, eType) aType) aTyp
 }
 
 // CAUTION: this method is recursive and consumes stack space proportional to both, the stream size and the size of its elements. Use `FoldLeft` instead if possible.
-// #dependsOn {"typeCtor":"stream", "baseTArgs": [{"type":"aType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) FoldRight__aType(f func(eType, aType) aType, z aType) aType {
 	if es == nil {
 		return z

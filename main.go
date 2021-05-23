@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	typeCtors "github.com/readren/functional-go/typectors"
 )
@@ -21,18 +22,50 @@ func main() {
 		}
 
 		config := typeCtors.Config{
-			GeneratedPackageParentDir: fmt.Sprintf("%s/generated-package-parent-dir", workingDir),
-			GeneratedPackageName:      "functional",
-			TemplatesFolder:           fmt.Sprintf("%s/typectors", workingDir),
+			GeneratedPackageParentDir: filepath.Join(workingDir, "instantiations"),
+			GeneratedPackageName:      "fung",
+			TemplatesFolder:           filepath.Join(workingDir, "typectors", "templates"),
 			TypesDescriptors: []typeCtors.TypeDescriptor{
 				{
-					TypeConstructorName: "stream",
+					TypeConstructorName: "Stream",
 					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}},
 					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{
+						{{Type: "string"}},
+						{{Type: "int"}},
 						{{Type: "image.Point", PackagePath: "image"}},
-						{{Type: "bool"}, {Type: "int"}},
 						{{Type: "string"}, {Type: "[]bool"}},
 					},
+				},
+				{
+					TypeConstructorName: "Stream",
+					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "string"}},
+					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{
+						{{Type: "string"}},
+					},
+				},
+				{
+					TypeConstructorName: "Validate",
+					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}},
+					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{
+						{{Type: "string"}},
+					},
+				},
+				{
+					TypeConstructorName: "ValiResu",
+					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}},
+					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{
+						{{Type: "string"}},
+					},
+				},
+				{
+					TypeConstructorName: "Try",
+					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}},
+					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{},
+				},
+				{
+					TypeConstructorName: "Try",
+					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "string"}},
+					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{},
 				},
 			},
 		}
