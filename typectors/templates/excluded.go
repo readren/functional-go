@@ -12,6 +12,9 @@ type aType = struct{}
 // The second type parameter of the polymorphic methods
 type bType = struct{}
 
+type xType = struct{}
+type yType = struct{}
+
 type Try_aType func() aType
 
 func (ta Try_aType) Catch() (a aType, err interface{}) {
@@ -30,5 +33,11 @@ func ValiResu_aType__Try(f func() aType) (vrs ValiResu_aType) {
 type Validate_aType func() (aType, interface{})
 
 func Validate_aType__Try(f Try_aType) Validate_aType {
+	panic("This template line should have been removed")
+}
+
+type FuncFrom_sType_to_aType func(s sType) aType
+
+func (fsa FuncFrom_sType_to_aType) Fix(s sType) func() aType {
 	panic("This template line should have been removed")
 }

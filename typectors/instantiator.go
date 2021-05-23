@@ -32,8 +32,7 @@ var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 			{"eType__Stream__aType__bType", []string{"aType", "bType"}},
 		},
 		func(baseTypeArguments TypeArguments) string {
-			elemsTypeName := baseTypeArguments[0].GetTypeName()
-			return fmt.Sprintf("Stream_%s", elemsTypeName)
+			return fmt.Sprintf("Stream_%s", baseTypeArguments[0].GetTypeName())
 		},
 	},
 	"ValiResu": {
@@ -43,8 +42,7 @@ var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 			{"sType__ValiResu__aType", []string{"aType"}},
 		},
 		func(baseTypeArguments TypeArguments) string {
-			elemsTypeName := baseTypeArguments[0].GetTypeName()
-			return fmt.Sprintf("ValiResu_%s", elemsTypeName)
+			return fmt.Sprintf("ValiResu_%s", baseTypeArguments[0].GetTypeName())
 		},
 	},
 	"Validate": {
@@ -54,8 +52,7 @@ var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 			{"sType__Validate__aType", []string{"aType"}},
 		},
 		func(baseTypeArguments TypeArguments) string {
-			elemsTypeName := baseTypeArguments[0].GetTypeName()
-			return fmt.Sprintf("Validate_%s", elemsTypeName)
+			return fmt.Sprintf("Validate_%s", baseTypeArguments[0].GetTypeName())
 		},
 	},
 	"Try": {
@@ -64,8 +61,16 @@ var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 			{"sType__Try", []string{}},
 		},
 		func(baseTypeArguments TypeArguments) string {
-			elemsTypeName := baseTypeArguments[0].GetTypeName()
-			return fmt.Sprintf("Try_%s", elemsTypeName)
+			return fmt.Sprintf("Try_%s", baseTypeArguments[0].GetTypeName())
+		},
+	},
+	"Func1": {
+		[]string{"xType", "yType"},
+		[]Template{
+			{"xType__yType__Func1", []string{}},
+		},
+		func(baseTypeArguments TypeArguments) string {
+			return fmt.Sprintf("FuncFrom_%s_to_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
 		},
 	},
 }
