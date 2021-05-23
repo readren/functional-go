@@ -182,8 +182,8 @@ func (es1 Stream_eType) IsEqualTo(es2 Stream_eType, elemEquality func(eType, eTy
 	return es1.Corresponds__eType(es2, elemEquality)
 }
 
-//// implementation of PartialFunction[int, eType] ////
-
+// `ApplyOrElse` gives the element at the specified index or the value returned by the supplied `defaultValue` function if said index is out of the bounds [0, size).
+// The purpose of this combinator is to make `Stream` implement the `PartialFunction[int, eType]` interface.
 // CAUTION: this method traverses `index + 1` elements of this stream. Avoid it for long stream if possible.
 func (es Stream_eType) ApplyOrElse(index int, defaultValue func() eType) eType {
 	if index < 0 {
@@ -200,14 +200,12 @@ func (es Stream_eType) ApplyOrElse(index int, defaultValue func() eType) eType {
 	return defaultValue()
 }
 
+// `Apply` gives the element at the specified index or panics if said index is out of the bounds [0, size).
+// The purpose of this combinator is to make `Stream` implement the `Func1[int, eType]` interface.
 // CAUTION: this method traverses `index + 1` elements of this stream. Avoid it for long stream if possible.
 // #usesExternalPackage {"path":"fmt"}
-func (es Stream_eType) Apply(index int) (eType, error) {
-	var err error
-	v := es.ApplyOrElse(index, func() eType {
-		err = fmt.Errorf("index out of bounds: %v", index)
-		var zero eType
-		return zero
+func (es Stream_eType) Apply(index int) eType {
+	return es.ApplyOrElse(index, func() eType {
+		panic(fmt.Errorf("index out of bounds: %v", index))
 	})
-	return v, err
 }

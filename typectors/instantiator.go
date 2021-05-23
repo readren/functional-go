@@ -55,13 +55,13 @@ var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 			return fmt.Sprintf("Validate_%s", baseTypeArguments[0].GetTypeName())
 		},
 	},
-	"Try": {
+	"Giver1": {
 		[]string{"sType"},
 		[]Template{
-			{"sType__Try", []string{}},
+			{"sType__Giver", []string{}},
 		},
 		func(baseTypeArguments TypeArguments) string {
-			return fmt.Sprintf("Try_%s", baseTypeArguments[0].GetTypeName())
+			return fmt.Sprintf("Giver_%s", baseTypeArguments[0].GetTypeName())
 		},
 	},
 	"Func1": {

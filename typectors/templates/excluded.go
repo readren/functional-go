@@ -15,29 +15,15 @@ type bType = struct{}
 type xType = struct{}
 type yType = struct{}
 
-type Try_aType func() aType
-
-func (ta Try_aType) Catch() (a aType, err interface{}) {
-	panic("This template line should have been removed")
-}
-
 type ValiResu_aType struct {
 	Val aType
 	Err interface{}
 }
 
-func ValiResu_aType__Try(f func() aType) (vrs ValiResu_aType) {
-	panic("This template line should have been removed")
-}
-
 type Validate_aType func() (aType, interface{})
-
-func Validate_aType__Try(f Try_aType) Validate_aType {
-	panic("This template line should have been removed")
-}
 
 type FuncFrom_sType_to_aType func(s sType) aType
 
-func (fsa FuncFrom_sType_to_aType) Fix(s sType) func() aType {
+func (fsa FuncFrom_sType_to_aType) Try(s sType) (aType, interface{}) {
 	panic("This template line should have been removed")
 }

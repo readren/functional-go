@@ -57,16 +57,6 @@ func main() {
 						{{Type: "string"}},
 					},
 				},
-				{
-					TypeConstructorName: "Try",
-					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}},
-					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{},
-				},
-				{
-					TypeConstructorName: "Try",
-					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "string"}},
-					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{},
-				},
 			},
 		}
 
