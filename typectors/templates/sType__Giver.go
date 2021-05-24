@@ -7,8 +7,8 @@ func (ss Giver_sType) Apply() sType {
 	return ss()
 }
 
-func (ss Giver_sType) Try() (s sType, err interface{}) {
-	defer catch(&err)
+func (ss Giver_sType) Try(guard func(any) bool) (s sType, err any) {
+	defer catch(&err, guard)
 	s = ss()
 	return
 }

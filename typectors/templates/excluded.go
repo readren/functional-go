@@ -17,13 +17,25 @@ type yType = struct{}
 
 type ValiResu_aType struct {
 	Val aType
-	Err interface{}
+	Err any
 }
 
-type Validate_aType func() (aType, interface{})
+type Validate_aType func() (aType, any)
 
 type FuncFrom_sType_to_aType func(s sType) aType
 
-func (fsa FuncFrom_sType_to_aType) Try(s sType) (aType, interface{}) {
+func (fsa FuncFrom_sType_to_aType) Try(s sType, guard Guard) (aType, any) {
+	panic("This template line should have been removed")
+}
+
+type FuncFrom_sType_to_ValiResu_aType func(s sType) ValiResu_aType
+
+func (fs2vra FuncFrom_sType_to_ValiResu_aType) Try(s sType, guard Guard) (ValiResu_aType, any) {
+	panic("This template line should have been removed")
+}
+
+type FuncFrom_sType_to_Validate_aType func(s sType) Validate_aType
+
+func (fs2va FuncFrom_sType_to_Validate_aType) Try(s sType, guard Guard) (Validate_aType, any) {
 	panic("This template line should have been removed")
 }

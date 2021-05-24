@@ -6,8 +6,14 @@ func (fxy FuncFrom_xType_to_yType) Apply(x xType) yType {
 	return fxy(x)
 }
 
-func (fxy FuncFrom_xType_to_yType) Try(x xType) (y yType, err interface{}) {
-	defer catch(&err)
+func (fxy FuncFrom_xType_to_yType) Try(x xType, guard Guard) (y yType, err any) {
+	defer catch(&err, guard)
 	y = fxy(x)
 	return
+}
+
+func (fxy FuncFrom_xType_to_yType) Fix(x xType) func() yType {
+	return func() yType {
+		return fxy(x)
+	}
 }
