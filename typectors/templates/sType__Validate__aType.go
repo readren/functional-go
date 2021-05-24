@@ -2,7 +2,7 @@ package fung
 
 // #dependsOn {"typeCtor":"Validate", "baseTArgs": [{"type":"aType"}] }
 func (vs Validate_sType) Mapped__aType(f func(sType) aType) Validate_aType {
-	return func() (a aType, err any) {
+	return func() (a aType, err error) {
 		var s sType
 		s, err = vs()
 		if err == nil {
@@ -14,7 +14,7 @@ func (vs Validate_sType) Mapped__aType(f func(sType) aType) Validate_aType {
 
 // #dependsOn {"typeCtor":"Validate", "baseTArgs": [{"type":"aType"}] }
 func (vs Validate_sType) Bound__aType(f func(s sType) Validate_aType) Validate_aType {
-	return func() (a aType, err any) {
+	return func() (a aType, err error) {
 		var s sType
 		s, err = vs()
 		if err == nil {
@@ -28,7 +28,7 @@ func (vs Validate_sType) Bound__aType(f func(s sType) Validate_aType) Validate_a
 // #dependsOn {"typeCtor":"Validate", "baseTArgs": [{"type":"aType"}] }
 // #dependsOn {"typeCtor":"Func1", "baseTArgs": [{"type":"sType"},{"type":"aType"}]}
 func (vs Validate_sType) GuardMapped__aType(guard Guard, f FuncFrom_sType_to_aType) Validate_aType {
-	return func() (a aType, err any) {
+	return func() (a aType, err error) {
 		s, err := vs()
 		if err == nil {
 			return f.Try(s, guard)
@@ -41,7 +41,7 @@ func (vs Validate_sType) GuardMapped__aType(guard Guard, f FuncFrom_sType_to_aTy
 // #dependsOn {"typeCtor":"Validate", "baseTArgs": [{"type":"aType"}] }
 // #dependsOn {"typeCtor":"Func1", "baseTArgs": [{"type":"sType"},{"type":"Validate_aType"}]}
 func (vs Validate_sType) GuardBound__aType(guard Guard, f FuncFrom_sType_to_Validate_aType) Validate_aType {
-	return func() (a aType, err any) {
+	return func() (a aType, err error) {
 		var s sType
 		s, err = vs()
 		if err == nil {

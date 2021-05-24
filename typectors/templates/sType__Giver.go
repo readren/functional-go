@@ -3,12 +3,12 @@ package fung
 // Giver is like a function that takes no parameter.
 type Giver_sType func() sType
 
-func (ss Giver_sType) Apply() sType {
-	return ss()
+func (gs Giver_sType) Apply() sType {
+	return gs()
 }
 
-func (ss Giver_sType) Try(guard func(any) bool) (s sType, err any) {
+func (gs Giver_sType) Try(guard Guard) (s sType, err error) {
 	defer catch(&err, guard)
-	s = ss()
+	s = gs()
 	return
 }

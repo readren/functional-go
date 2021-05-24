@@ -6,7 +6,7 @@ func (fxy FuncFrom_xType_to_yType) Apply(x xType) yType {
 	return fxy(x)
 }
 
-func (fxy FuncFrom_xType_to_yType) Try(x xType, guard Guard) (y yType, err any) {
+func (fxy FuncFrom_xType_to_yType) Try(x xType, guard Guard) (y yType, err error) {
 	defer catch(&err, guard)
 	y = fxy(x)
 	return

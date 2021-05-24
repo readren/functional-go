@@ -35,7 +35,7 @@ func (vrs ValiResu_sType) GuardMapped__aType(guard Guard, f FuncFrom_sType_to_aT
 // #dependsOn {"typeCtor":"Func1", "baseTArgs": [{"type":"sType"},{"type":"ValiResu_aType"}]}
 func (vrs ValiResu_sType) GuardBound__aType(guard Guard, f FuncFrom_sType_to_ValiResu_aType) (vra ValiResu_aType) {
 	if vrs.Err == nil {
-		var err any
+		var err error
 		vra, err = f.Try(vrs.Val, guard)
 		if err != nil {
 			vra.Err = err
