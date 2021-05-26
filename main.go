@@ -29,7 +29,8 @@ func main() {
 				{
 					TypeConstructorName: "Stream",
 					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}},
-					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{
+					FuncTypeArgumentsForWhichTemplatesAreInstantiated: []typeCtors.TypeArguments{
+						{},
 						{{Type: "string"}},
 						{{Type: "int"}},
 						{{Type: "image.Point", PackagePath: "image"}},
@@ -39,21 +40,22 @@ func main() {
 				{
 					TypeConstructorName: "Stream",
 					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "string"}},
-					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{
+					FuncTypeArgumentsForWhichTemplatesAreInstantiated: []typeCtors.TypeArguments{
+						{},
 						{{Type: "string"}},
 					},
 				},
 				{
 					TypeConstructorName: "Validate",
-					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}},
-					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{
+					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}, {Type: "string"}},
+					FuncTypeArgumentsForWhichTemplatesAreInstantiated: []typeCtors.TypeArguments{
 						{{Type: "string"}},
 					},
 				},
 				{
 					TypeConstructorName: "ValiResu",
-					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}},
-					TypeArgumentsForWhichPolymorphicMethodsAreInstantiated: []typeCtors.TypeArguments{
+					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}, {Type: "string"}},
+					FuncTypeArgumentsForWhichTemplatesAreInstantiated: []typeCtors.TypeArguments{
 						{{Type: "string"}},
 					},
 				},

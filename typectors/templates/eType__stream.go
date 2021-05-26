@@ -1,5 +1,7 @@
 package fung
 
+// #dependsOn {"typeCtor":"Stream", "baseTArgs":[], "funcTArgs":[{"type":"eType"}]}
+
 // #importAnchor
 
 // #excludeSectionBegin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
@@ -13,35 +15,6 @@ func (es1 Stream_eType) Corresponds__eType(es2 Stream_eType, f func(e1 eType, e2
 }
 
 // #excludeSectionEnd
-
-// The type of the stream whose elements are of type `eType`
-type Stream_eType func() (eType, Stream_eType)
-
-func Stream_eType__Empty() Stream_eType {
-	return nil
-}
-
-func Stream_eType__Single(e eType) Stream_eType {
-	return func() (eType, Stream_eType) {
-		return e, nil
-	}
-}
-
-func Stream_eType__Forever(e eType) Stream_eType {
-	return func() (eType, Stream_eType) {
-		return e, Stream_eType__Forever(e)
-	}
-}
-
-func Stream_eType__FromSlice(slice []eType) Stream_eType {
-	if len(slice) == 0 {
-		return nil
-	} else {
-		return func() (eType, Stream_eType) {
-			return slice[0], Stream_eType__FromSlice(slice[1:])
-		}
-	}
-}
 
 ////
 
@@ -85,8 +58,8 @@ func (es Stream_eType) PrecededBy(a eType) Stream_eType {
 }
 
 // Note: this method is fully lazy. Applying it traverses no element of this stream.
-func (es Stream_eType) SuccedeedBy(a eType) Stream_eType {
-	return es.FollowedBy(Stream_eType__Single(a))
+func (es Stream_eType) SuccedeedBy(e eType) Stream_eType {
+	return es.FollowedBy(Stream__Single__eType(e))
 }
 
 func (es Stream_eType) IsEmpty() bool {
@@ -177,7 +150,7 @@ func (es Stream_eType) ForAny(p func(eType) bool) bool {
 	})
 }
 
-// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"eType"}], "methodTArgs": [{"type":"eType"}]}
+// #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"eType"}], "funcTArgs": [{"type":"eType"}]}
 func (es1 Stream_eType) IsEqualTo(es2 Stream_eType, elemEquality func(eType, eType) bool) bool {
 	return es1.Corresponds__eType(es2, elemEquality)
 }

@@ -1,15 +1,13 @@
 package fung
 
+// #dependsOn {"typeCtor":"Stream", "funcTArgs":[{"type":"eType"}]}
+
 // #importAnchor
 
 // #excludeSectionBegin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
 
 // The type of the stream whose elements are of type `aType`
-type Stream_aType func() (aType, Stream_aType)
 
-func Stream_aType__Single(a aType) Stream_aType {
-	panic("This template line should have been removed")
-}
 func (as Stream_aType) FollowedBy(Stream_aType) Stream_aType {
 	panic("This template line should have been removed")
 }
@@ -96,7 +94,7 @@ func (es Stream_eType) MappedKEI__aType(indexBase int, f func(e eType, index int
 // #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) Scanned__aType(z aType, f func(aType, eType) aType) Stream_aType {
 	if es == nil {
-		return Stream_aType__Single(z)
+		return Stream__Single__aType(z)
 	} else {
 		return func() (aType, Stream_aType) {
 			var e eType

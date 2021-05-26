@@ -10,67 +10,149 @@ import (
 	"strings"
 )
 
+// A Tempalte is a source file that contains all the funcs of a `TypeConstructor` that have the same number of both, base type parameters, and func type parameters.
 type Template struct {
-	FileName                         string
-	PolymorphicMethodsTypeParameters []string
+	FileName           string
+	FuncTypeParameters []string
 }
 
-type TypeConstructor struct {
+// A `TypeConstructor` is a builder of types of the same form. Examples of `TypeConstructor` are `Option`, `List`, `Stream`, `Function1`, `Function2`.
+// The definitions that comprises a `TypeConstructor` are grouped by both, the number base type parameters (chapters), and the number of func type parameteres (templates).
+type TypeConstructor []Chapter
+
+// A Chapter consists of all the funcs of a `TypeConstructor` that have the same number of base type parameters.
+type Chapter struct {
 	BaseTypeParameters []string
-	// Every type constructor definition is split in many templates each of them containing all the methods that have the same number of type parameters. This field contains said templates indexed by the number of type parameters.
+	// Every chapter is split in many templates, each of them containing all the funcs that have the same number of type parameters. This field contains said templates indexed by the number of type parameters.
 	// The purpose of this sepparation is to avoid the need to parse the go source files.
 	Templates       []Template
 	TypeNameBuilder func(baseTypeArguments TypeArguments) string
 }
 
+var emptyChapter = Chapter{[]string{}, []Template{}, nil}
+
 var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor{
-	"Stream": {
-		[]string{"eType"},
-		[]Template{
-			{"eType__Stream", []string{}},
-			{"eType__Stream__aType", []string{"aType"}},
-			{"eType__Stream__aType__bType", []string{"aType", "bType"}},
-		},
-		func(baseTypeArguments TypeArguments) string {
-			return fmt.Sprintf("Stream_%s", baseTypeArguments[0].GetTypeName())
-		},
-	},
-	"ValiResu": {
-		[]string{"sType"},
-		[]Template{
-			{"sType__ValiResu", []string{}},
-			{"sType__ValiResu__aType", []string{"aType"}},
-		},
-		func(baseTypeArguments TypeArguments) string {
-			return fmt.Sprintf("ValiResu_%s", baseTypeArguments[0].GetTypeName())
+	"Recover": {
+		{ //0 baseParam
+			[]string{},
+			[]Template{
+				{"Recover", []string{}},               // 0 funcParams
+				{"Recover__aType", []string{"aType"}}, // 0 funcParams
+			},
+			func(baseTypeArguments TypeArguments) string {
+				return "Recover"
+			},
 		},
 	},
-	"Validate": {
-		[]string{"sType"},
-		[]Template{
-			{"sType__Validate", []string{}},
-			{"sType__Validate__aType", []string{"aType"}},
+	"Errors": {
+		{ //0 baseParam
+			[]string{},
+			[]Template{
+				{},                                   // 0 funcParams
+				{"Errors__kType", []string{"kType"}}, // 1 funcParams
+			},
+			func(baseTypeArguments TypeArguments) string {
+				return "Errors"
+			},
 		},
-		func(baseTypeArguments TypeArguments) string {
-			return fmt.Sprintf("Validate_%s", baseTypeArguments[0].GetTypeName())
-		},
-	},
-	"Giver1": {
-		[]string{"sType"},
-		[]Template{
-			{"sType__Giver", []string{}},
-		},
-		func(baseTypeArguments TypeArguments) string {
-			return fmt.Sprintf("Giver_%s", baseTypeArguments[0].GetTypeName())
+		{ //1 baseParam
+			[]string{"kType"},
+			[]Template{
+				{"kType__Errors", []string{"kType"}}, // 0 funcParams
+			},
+			func(baseTypeArguments TypeArguments) string {
+				return "Errors"
+			},
 		},
 	},
 	"Func1": {
-		[]string{"xType", "yType"},
-		[]Template{
-			{"xType__yType__Func1", []string{}},
+		emptyChapter, //0 baseParam
+		emptyChapter, //1 baseParam
+		{ //2 baseParam
+			[]string{"xType", "yType"},
+			[]Template{
+				{"xType__yType__Func1", []string{}},               // 0 funcParams
+				{"xType__yType__Func1__aType", []string{"aType"}}, // 0 funcParams
+			},
+			func(baseTypeArguments TypeArguments) string {
+				return fmt.Sprintf("FuncFrom_%s_to_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
+			},
 		},
-		func(baseTypeArguments TypeArguments) string {
-			return fmt.Sprintf("FuncFrom_%s_to_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
+	},
+	"Giver1": {
+		emptyChapter, //0 baseParam
+		{ //1 baseParam
+			[]string{"sType"},
+			[]Template{
+				{"sType__Giver", []string{}},
+				{"sType__Giver__aType", []string{"aType"}},
+			},
+			func(baseTypeArguments TypeArguments) string {
+				return fmt.Sprintf("Giver_%s", baseTypeArguments[0].GetTypeName())
+			},
+		},
+	},
+	"Stream": {
+		{ //0 baseParam
+			[]string{},
+			[]Template{
+				{},
+				{"Stream__aType", []string{"aType"}},
+			},
+			func(baseTypeArguments TypeArguments) string {
+				return "Stream"
+			},
+		},
+		{ //1 baseParam
+			[]string{"eType"},
+			[]Template{
+				{"eType__Stream", []string{}},
+				{"eType__Stream__aType", []string{"aType"}},
+				{"eType__Stream__aType__bType", []string{"aType", "bType"}},
+			},
+			func(baseTypeArguments TypeArguments) string {
+				return fmt.Sprintf("Stream_%s", baseTypeArguments[0].GetTypeName())
+			},
+		},
+	},
+	"Validate": {
+		emptyChapter, // 0 baseParams
+		emptyChapter, // 1 baseParams
+		{ //2 baseParams
+			[]string{"sType", "kType"},
+			[]Template{
+				{"sType__kType__Validate", []string{}},
+				{"sType__kType__Validate__aType", []string{"aType"}},
+			},
+			func(baseTypeArguments TypeArguments) string {
+				return fmt.Sprintf("Validate_%s", baseTypeArguments[0].GetTypeName())
+			},
+		},
+	},
+	"ValiResu": {
+		{ //0 baseParams
+			[]string{},
+			[]Template{
+				{},
+				{"ValiResu__aType__bType", []string{"aType", "bType"}},
+				{"ValiResu__aType__bType__cType", []string{"aType", "bType", "cType"}},
+				{"ValiResu__aType__bType__cType__dType", []string{"aType", "bType", "cType", "dType"}},
+				{"ValiResu__aType__bType__cType__dType__eType", []string{"aType", "bType", "cType", "dType", "eType"}},
+			},
+			func(baseTypeArguments TypeArguments) string {
+				return "ValiResu"
+			},
+		},
+		emptyChapter, //1 baseParams
+		{ //2 baseParams
+			[]string{"sType", "kType"},
+			[]Template{
+				{"sType__kType__ValiResu", []string{}},
+				{"sType__kType__ValiResu__aType", []string{"aType"}},
+			},
+			func(baseTypeArguments TypeArguments) string {
+				return fmt.Sprintf("ValiResu_%s", baseTypeArguments[0].GetTypeName())
+			},
 		},
 	},
 }
@@ -130,7 +212,7 @@ func (tas1 TypeArguments) IsEqual(tas2 TypeArguments) bool {
 type TemplateArguments struct {
 	TypeConstructorName string        `json:"typeCtor"`
 	BaseTypeArguments   TypeArguments `json:"baseTArgs"`
-	MethodTypeArguments TypeArguments `json:"methodTArgs"`
+	MethodTypeArguments TypeArguments `json:"funcTArgs"`
 }
 
 func (thisPtr *TemplateArguments) IsEqual(otherPtr *TemplateArguments) bool {
@@ -145,8 +227,8 @@ func (thisPtr *TemplateArguments) IsEqual(otherPtr *TemplateArguments) bool {
 type TypeDescriptor struct {
 	TypeConstructorName string
 	BaseTypeArguments   TypeArguments
-	// Specifies for which type arguments are each polymorphic method instantiated. For example, if the type constructor templates had the polymofphic the methods "foo", with one type parameter, and "bar", with two type parameters; and this field value were [ [{"int"}], [{"Point", "image"}], [{"bool"},{"string"}] ]; then the "foo" method would be instanciated two times, the first with type argument "int" ("foo__int(..)") and the second with type argument "image.Point" ("foo__imagePoint(..)"); and the "bar" method would be instantiated one time with the type arguments "bool" and "string" ("bar__bool__string(..)").
-	TypeArgumentsForWhichPolymorphicMethodsAreInstantiated []TypeArguments
+	// Specifies for which set of type arguments are templates instantiated. For example, if the type constructor method templates had the polymofphic the methods "foo", with one type parameter, and "bar", with two type parameters; and this field value were [ [{"int"}], [{"Point", "image"}], [{"bool"},{"string"}] ]; then the "foo" method would be instanciated two times, the first with type argument "int" ("foo__int(..)") and the second with type argument "image.Point" ("foo__imagePoint(..)"); and the "bar" method would be instantiated one time with the type arguments "bool" and "string" ("bar__bool__string(..)").
+	FuncTypeArgumentsForWhichTemplatesAreInstantiated []TypeArguments
 }
 
 type Config struct {
@@ -177,15 +259,15 @@ func GeneratePackage(config Config) {
 	defer func() { os.RemoveAll(tempDir) }()
 	fmt.Printf("temporary working directory: %s\n", tempDir)
 
-	comonSrcFile := filepath.Join(config.TemplatesFolder, "common.go")
-	checkError(copyFile(comonSrcFile, filepath.Join(tempDir, "common.go")), fmt.Sprintf(`unable to copy the "%s" file to the temporary directory`, comonSrcFile))
+	// comonSrcFile := filepath.Join(config.TemplatesFolder, "common.go")
+	// checkError(copyFile(comonSrcFile, filepath.Join(tempDir, "common.go")), fmt.Sprintf(`unable to copy the "%s" file to the temporary directory`, comonSrcFile))
 
 	var manager = manager{config, tempDir, map[string]TypeArgument{}, setOfTemplateArgs{}, setOfTemplateArgs{}, false}
 	manager.groupAllTypeArgumentsByType()
 
 	// Instantiate all the templates specified in the `config`
-	for _, tia := range config.TypesDescriptors {
-		manager.incarnateType(tia)
+	for _, td := range config.TypesDescriptors {
+		manager.incarnateType(td)
 	}
 	manager.funcsWithNoInternalDependantsAreExcluded = true
 	// Instantiate the templates pointed by all the "#dependsOn" directives contained in the instantianted templates, that aren't already instantiated.
@@ -197,8 +279,8 @@ func GeneratePackage(config Config) {
 		manager.requestedDependencies = make(setOfTemplateArgs, 0)
 		for _, md := range missingDependencies {
 			methodTypeArguments := append(make([]TypeArguments, 0, 1), md.MethodTypeArguments)
-			tia := TypeDescriptor{md.TypeConstructorName, md.BaseTypeArguments, methodTypeArguments}
-			manager.incarnateType(tia)
+			td := TypeDescriptor{md.TypeConstructorName, md.BaseTypeArguments, methodTypeArguments}
+			manager.incarnateType(td)
 		}
 	}
 
@@ -212,8 +294,8 @@ func GeneratePackage(config Config) {
 func (managerPtr *manager) groupAllTypeArgumentsByType() {
 	for _, td := range managerPtr.config.TypesDescriptors {
 		// indiscriminately collect the type arguments contained in the `TypeDescriptor` `td`
-		typeArguments := make([]TypeArguments, 0, 1+len(td.TypeArgumentsForWhichPolymorphicMethodsAreInstantiated))
-		typeArguments = append(typeArguments, td.TypeArgumentsForWhichPolymorphicMethodsAreInstantiated...)
+		typeArguments := make([]TypeArguments, 0, 1+len(td.FuncTypeArgumentsForWhichTemplatesAreInstantiated))
+		typeArguments = append(typeArguments, td.FuncTypeArgumentsForWhichTemplatesAreInstantiated...)
 		typeArguments = append(typeArguments, td.BaseTypeArguments)
 		// for each collected type argument:
 		for _, tas := range typeArguments {
@@ -260,19 +342,19 @@ func (managerPtr *manager) normalizeTemplateArguments(taPtr *TemplateArguments) 
 	}
 }
 
-func (managerPtr *manager) incarnateType(tia TypeDescriptor) {
-	typeConstructor := knowTypeConstructors[tia.TypeConstructorName]
-
-	// instantiate the unimorphic methods
-	typeConstructor.Templates[0].instantiate(tia.TypeConstructorName, typeConstructor, tia.BaseTypeArguments, nil, managerPtr)
+func (managerPtr *manager) incarnateType(td TypeDescriptor) {
+	typeConstructor := knowTypeConstructors[td.TypeConstructorName]
+	chapter := typeConstructor[len(td.BaseTypeArguments)]
+	// // instantiate the unimorphic methods
+	// chapter.Templates[0].instantiate(tia.TypeConstructorName, typeConstructor, tia.BaseTypeArguments, nil, managerPtr)
 
 	// instantiate the polymorphic methods's template for each of the specified sets of method type arguments
-	for _, methodTypeArguments := range tia.TypeArgumentsForWhichPolymorphicMethodsAreInstantiated {
-		numberOfMethodsTypeParameters := len(methodTypeArguments)
-		// choose the polymorphic methods's template appropiate for the number of type arguments
-		polymorphicMethodsTemplate := typeConstructor.Templates[numberOfMethodsTypeParameters]
+	for _, funcTypeArguments := range td.FuncTypeArgumentsForWhichTemplatesAreInstantiated {
+		numberOfFuncTypeParameters := len(funcTypeArguments)
+		// choose the polymorphic funcs's template appropiate for the number of type arguments
+		polymorphicFuncsTemplate := chapter.Templates[numberOfFuncTypeParameters]
 		// instantiate it
-		polymorphicMethodsTemplate.instantiate(tia.TypeConstructorName, typeConstructor, tia.BaseTypeArguments, methodTypeArguments, managerPtr)
+		polymorphicFuncsTemplate.instantiate(td.TypeConstructorName, chapter, td.BaseTypeArguments, funcTypeArguments, managerPtr)
 	}
 }
 
@@ -294,7 +376,7 @@ var importAnchorRegex = regexp.MustCompile(`(?m)^.*#importAnchor\s.*$`)
 var startOfFuncsWithNoInternalDependantsRegex = regexp.MustCompile(`(?m)^.*#startOfFuncsWithNoInternalDependants(.|\s)*`)
 
 // Generates a source file based on this template with the specified type arguments
-func (template *Template) instantiate(typeConstructorName string, typeConstructor TypeConstructor, baseTypeArguments TypeArguments, methodTypeArguments TypeArguments, managerPtr *manager) {
+func (template *Template) instantiate(typeConstructorName string, chapter Chapter, baseTypeArguments TypeArguments, methodTypeArguments TypeArguments, managerPtr *manager) {
 
 	templateSrcFile := fmt.Sprintf("%s/%s.go", managerPtr.config.TemplatesFolder, template.FileName)
 	source, err := ioutil.ReadFile(templateSrcFile)
@@ -323,7 +405,7 @@ func (template *Template) instantiate(typeConstructorName string, typeConstructo
 		if len(typeArgument.PackagePath) > 0 {
 			externalDependencies[typeArgument.PackagePath] = typeArgument.PackageAlias
 		}
-		typeParameterName := typeConstructor.BaseTypeParameters[typeParameterIndex]
+		typeParameterName := chapter.BaseTypeParameters[typeParameterIndex]
 		codeFile.replaceTypeParameterWithTypeArgument(typeParameterName, typeArgument)
 	}
 	// replace polymorphic methods type parameters with the actual type arguments
@@ -331,7 +413,7 @@ func (template *Template) instantiate(typeConstructorName string, typeConstructo
 		if len(typeArgument.PackagePath) > 0 {
 			externalDependencies[typeArgument.PackagePath] = typeArgument.PackageAlias
 		}
-		typeParameterName := template.PolymorphicMethodsTypeParameters[typeParameterIndex]
+		typeParameterName := template.FuncTypeParameters[typeParameterIndex]
 		codeFile.replaceTypeParameterWithTypeArgument(typeParameterName, typeArgument)
 	}
 

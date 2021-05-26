@@ -1,5 +1,7 @@
 package fung
 
+// #dependsOn {"typeCtor":"Stream", "funcTArgs":[{"type":"eType"}]}
+
 // #importAnchor
 
 // #excludeSectionBegin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
