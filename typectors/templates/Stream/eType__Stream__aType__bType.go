@@ -4,21 +4,6 @@ package fung
 
 // #importAnchor
 
-// #excludeSectionBegin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
-
-// The type of the stream whose elements are of type `aType`
-type Stream_bType func() (bType, Stream_bType)
-type Stream_mapFrom_aType_to_slice_bType func() (map[aType][]bType, Stream_mapFrom_aType_to_slice_bType)
-
-func (bs Stream_bType) FollowedBy(Stream_bType) Stream_bType {
-	panic("This template line should have been removed")
-}
-func (bs Stream_bType) SucceddedBy(bType) Stream_bType {
-	panic("This template line should have been removed")
-}
-
-// #excludeSectionEnd
-
 // #startOfFuncsWithNoInternalDependants
 
 // Returns a stream of elements of type `map[aType][]bType` (map from `aType` to slices of `bType`) where the element at index `i` is the grouped accumulation of the first `i` elements of this stream.

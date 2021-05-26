@@ -4,16 +4,6 @@ package fung
 
 // #importAnchor
 
-// #excludeSectionBegin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
-
-// The type of the stream whose elements are of type `aType`
-
-func (as Stream_aType) FollowedBy(Stream_aType) Stream_aType {
-	panic("This template line should have been removed")
-}
-
-// #excludeSectionEnd
-
 // #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) Corresponds__aType(as Stream_aType, f func(e eType, a aType) bool) bool {
 	var e eType

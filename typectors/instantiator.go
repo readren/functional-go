@@ -16,21 +16,26 @@ type Template struct {
 	FuncTypeParameters []string
 }
 
-// A `TypeConstructor` is a builder of types of the same form. Examples of `TypeConstructor` are `Option`, `List`, `Stream`, `Function1`, `Function2`.
-// The definitions that comprises a `TypeConstructor` are grouped by both, the number base type parameters (chapters), and the number of func type parameteres (templates).
+// A `TypeConstructor` is a builder of types of the same form. Examples of `TypeConstructor` are `Option`, `List`, `Stream`, `Func1`, `Func2`.
+// The definitions that comprises a `TypeConstructor` are grouped by both, the number of base type parameters, and the number of func type parameteres.
 type TypeConstructor []Chapter
 
-// A Chapter consists of all the funcs of a `TypeConstructor` that have the same number of base type parameters.
+// A `Chapter` consists of all the funcs of a `TypeConstructor` that have the same number of base type parameters.
+// The funcs contained by a chapter are grouped by the number of func type arguments. Each of these groups is named a "template"
+// The name "chapter" comes from the analogy with "book", where the entire book is a type constructor, and the pages are the templates.
 type Chapter struct {
 	BaseTypeParameters []string
 	// Every chapter is split in many templates, each of them containing all the funcs that have the same number of type parameters. This field contains said templates indexed by the number of type parameters.
 	// The purpose of this sepparation is to avoid the need to parse the go source files.
-	Templates       []Template
+	Templates []Template
+	// Not being used
 	TypeNameBuilder func(baseTypeArguments TypeArguments) string
 }
 
+// Given we use a slice to contain the chapters in order to index them by the number of base type arguments; some elements of the slice may be empty.
 var emptyChapter = Chapter{[]string{}, []Template{}, nil}
 
+// Contains all the known instances of `TypeConstructor` indexed by its name.
 var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor{
 	"Recover": {
 		{ //0 baseParam
@@ -164,9 +169,9 @@ type TypeArgument struct {
 	Type string
 	// the package where the type in the `Type` field is defined. This field is optional when the `Type` field has a basic native type like "int", but not "[]int" nor "image.Point".
 	PackagePath string
-	// the alias of the package. This field is considered only when the `PackagePath` field is defined, and its default value is the last segment of the package path.
+	// the alias of the package. This field is considered only when the `PackagePath` field is defined. Its default value is the last segment of the package path.
 	PackageAlias string
-	// the name to associate to the type in the `Type` field. There should be a one to one relationshipt between types and type names. This field is optional when the `Type` field has a basic native type like "int", but not "[]int" nor "image.Point".
+	// the name to associate to the type in the `Type` field. There should be a one to one relationshipt between types and type names. This field is optional. When omited the name is generated automatically.
 	TypeName string
 }
 
@@ -193,6 +198,7 @@ func (ta *TypeArgument) GetTypeName() string {
 
 //// TypeArguments ////
 
+// An list of `TypeArgument`s.
 type TypeArguments []TypeArgument
 
 func (tas1 TypeArguments) IsEqual(tas2 TypeArguments) bool {
@@ -209,26 +215,34 @@ func (tas1 TypeArguments) IsEqual(tas2 TypeArguments) bool {
 
 //// TemplateArguments ////
 
+// Specifies a `Template` instantiation.
+// The which `Template` is pointed is specified by the type constructor name and the length of the base and func type arguments lists.
+// The with which actual type arguments is the template instantiatted is specified by the content of said type argument's lists.
 type TemplateArguments struct {
 	TypeConstructorName string        `json:"typeCtor"`
 	BaseTypeArguments   TypeArguments `json:"baseTArgs"`
-	MethodTypeArguments TypeArguments `json:"funcTArgs"`
+	FuncTypeArguments   TypeArguments `json:"funcTArgs"`
 }
 
 func (thisPtr *TemplateArguments) IsEqual(otherPtr *TemplateArguments) bool {
 	return thisPtr.TypeConstructorName == otherPtr.TypeConstructorName &&
 		thisPtr.BaseTypeArguments.IsEqual(otherPtr.BaseTypeArguments) &&
-		thisPtr.MethodTypeArguments.IsEqual(otherPtr.MethodTypeArguments)
+		thisPtr.FuncTypeArguments.IsEqual(otherPtr.FuncTypeArguments)
 }
 
 ////
 
-// Knows the arguments needed to incarnate a type.
+// Knows the information that the `incarnateType` function needs to incarnate a single type (or a singleton companion object when the `BaseTypeArguments` list is empty).
 type TypeDescriptor struct {
+	// The name that identifies the `TypeConstructor`. For example: "Stream", or "Func1".
 	TypeConstructorName string
-	BaseTypeArguments   TypeArguments
-	// Specifies for which set of type arguments are templates instantiated. For example, if the type constructor method templates had the polymofphic the methods "foo", with one type parameter, and "bar", with two type parameters; and this field value were [ [{"int"}], [{"Point", "image"}], [{"bool"},{"string"}] ]; then the "foo" method would be instanciated two times, the first with type argument "int" ("foo__int(..)") and the second with type argument "image.Point" ("foo__imagePoint(..)"); and the "bar" method would be instantiated one time with the type arguments "bool" and "string" ("bar__bool__string(..)").
-	FuncTypeArgumentsForWhichTemplatesAreInstantiated []TypeArguments
+	// The list of actual base type arguments.
+	// The length of this list must be either zero or match the number of type parameters of the type constructor. When the length is zero this `TypeDescriptor` does not describe a type but a companion singleton object with static functions.
+	// For example, to construct a type based on the `Stream` type constructor, the length of this field should be one. And for the case of the `Func1` type constructor, the length should be two.
+	BaseTypeArguments TypeArguments
+	// Specifies which `func`s of the type constructor are included in the generated type. The inclusion criteria is not by `func` name but by the number and type of `func`s type argiments.
+	// This field specifies the set of `func` type arguments lists for which are `func`s are included in the definition of the generated type. For example, given a type constructor with one unimorphic method "uni" and two polymofphic methods "foo<A>" and "bar<A,B>", where "foo" has one type parameter `A`, and "bar" has two type parameters `B` and `C`; if this field value were [ [{"int"}], [{"Point", "image"}], [{"bool"},{"string"}] ]; then the unimorphic method "uni" wouln't be included (because the set does not contain an empty arguments list), two versions of the "foo" method would be included, the first with type argument "int" ("foo__int(..)") and the second with type argument "image.Point" ("foo__imagePoint(..)"); and one version of the "bar" method would be included with the type arguments "bool" and "string" ("bar__bool__string(..)").
+	FuncTypeArgumentsForWhichFuncsAreIncluded []TypeArguments
 }
 
 type Config struct {
@@ -269,7 +283,6 @@ func GeneratePackage(config Config) {
 	for _, td := range config.TypesDescriptors {
 		manager.incarnateType(td)
 	}
-	manager.funcsWithNoInternalDependantsAreExcluded = true
 	// Instantiate the templates pointed by all the "#dependsOn" directives contained in the instantianted templates, that aren't already instantiated.
 	for {
 		missingDependencies := manager.requestedDependencies.diff(manager.instantiatedDependencies)
@@ -278,10 +291,11 @@ func GeneratePackage(config Config) {
 		}
 		manager.requestedDependencies = make(setOfTemplateArgs, 0)
 		for _, md := range missingDependencies {
-			methodTypeArguments := append(make([]TypeArguments, 0, 1), md.MethodTypeArguments)
+			methodTypeArguments := append(make([]TypeArguments, 0, 1), md.FuncTypeArguments)
 			td := TypeDescriptor{md.TypeConstructorName, md.BaseTypeArguments, methodTypeArguments}
 			manager.incarnateType(td)
 		}
+		manager.funcsWithNoInternalDependantsAreExcluded = true
 	}
 
 	// Move the generated source files from temporary directory to the one specified in the `Config`.
@@ -294,8 +308,8 @@ func GeneratePackage(config Config) {
 func (managerPtr *manager) groupAllTypeArgumentsByType() {
 	for _, td := range managerPtr.config.TypesDescriptors {
 		// indiscriminately collect the type arguments contained in the `TypeDescriptor` `td`
-		typeArguments := make([]TypeArguments, 0, 1+len(td.FuncTypeArgumentsForWhichTemplatesAreInstantiated))
-		typeArguments = append(typeArguments, td.FuncTypeArgumentsForWhichTemplatesAreInstantiated...)
+		typeArguments := make([]TypeArguments, 0, 1+len(td.FuncTypeArgumentsForWhichFuncsAreIncluded))
+		typeArguments = append(typeArguments, td.FuncTypeArgumentsForWhichFuncsAreIncluded...)
 		typeArguments = append(typeArguments, td.BaseTypeArguments)
 		// for each collected type argument:
 		for _, tas := range typeArguments {
@@ -333,28 +347,19 @@ func (managerPtr *manager) registerAndNormalizeTypeArgument(ta TypeArgument) Typ
 	}
 }
 
-func (managerPtr *manager) normalizeTemplateArguments(taPtr *TemplateArguments) {
-	for btaIndex := range taPtr.BaseTypeArguments {
-		taPtr.BaseTypeArguments[btaIndex] = managerPtr.registerAndNormalizeTypeArgument(taPtr.BaseTypeArguments[btaIndex])
-	}
-	for mtaIndex := range taPtr.MethodTypeArguments {
-		taPtr.MethodTypeArguments[mtaIndex] = managerPtr.registerAndNormalizeTypeArgument(taPtr.MethodTypeArguments[mtaIndex])
-	}
-}
-
+// Generates the golang source files that compose a type (`Stream<int>`, or `Validate<image.Point, string>`, or ...); provided the type constructor (`Stream`, or `Validate`, or ...),  the base type arguments (`int` for stream, or `image.Point` and `string` for validate, or ...), and a set of func type arguments lists.
 func (managerPtr *manager) incarnateType(td TypeDescriptor) {
+	// Obtain the `TypeConstructor` specified in the received `TypeDescriptor`.
 	typeConstructor := knowTypeConstructors[td.TypeConstructorName]
+	// Pick the chapter with the number of base type parameters specified in the received `TypeDescriptor`.
 	chapter := typeConstructor[len(td.BaseTypeArguments)]
-	// // instantiate the unimorphic methods
-	// chapter.Templates[0].instantiate(tia.TypeConstructorName, typeConstructor, tia.BaseTypeArguments, nil, managerPtr)
-
-	// instantiate the polymorphic methods's template for each of the specified sets of method type arguments
-	for _, funcTypeArguments := range td.FuncTypeArgumentsForWhichTemplatesAreInstantiated {
+	// Instantiate the templates of the chapter for each of the sets of func type arguments specified in the received `TypeDescriptor`
+	for _, funcTypeArguments := range td.FuncTypeArgumentsForWhichFuncsAreIncluded {
 		numberOfFuncTypeParameters := len(funcTypeArguments)
 		// choose the polymorphic funcs's template appropiate for the number of type arguments
-		polymorphicFuncsTemplate := chapter.Templates[numberOfFuncTypeParameters]
+		template := chapter.Templates[numberOfFuncTypeParameters]
 		// instantiate it
-		polymorphicFuncsTemplate.instantiate(td.TypeConstructorName, chapter, td.BaseTypeArguments, funcTypeArguments, managerPtr)
+		template.instantiate(td.TypeConstructorName, chapter, td.BaseTypeArguments, funcTypeArguments, managerPtr)
 	}
 }
 
@@ -378,7 +383,7 @@ var startOfFuncsWithNoInternalDependantsRegex = regexp.MustCompile(`(?m)^.*#star
 // Generates a source file based on this template with the specified type arguments
 func (template *Template) instantiate(typeConstructorName string, chapter Chapter, baseTypeArguments TypeArguments, methodTypeArguments TypeArguments, managerPtr *manager) {
 
-	templateSrcFile := fmt.Sprintf("%s/%s.go", managerPtr.config.TemplatesFolder, template.FileName)
+	templateSrcFile := fmt.Sprintf("%s/%s/%s.go", managerPtr.config.TemplatesFolder, typeConstructorName, template.FileName)
 	source, err := ioutil.ReadFile(templateSrcFile)
 	checkError(err, fmt.Sprintf("unable to load the template source file %s", templateSrcFile))
 	codeFile := codeFile{template.FileName, source}
@@ -467,6 +472,15 @@ func (cfp *codeFile) replaceTypeParameterWithTypeArgument(typeParameter string, 
 	cfp.content = identifierFragmentRegex.ReplaceAll(cfp.content, []byte(identifierFragmentReplacement))
 	// replace fragments of the generated source file name
 	cfp.fileName = identifierFragmentRegex.ReplaceAllString(cfp.fileName, identifierFragmentReplacement)
+}
+
+func (managerPtr *manager) normalizeTemplateArguments(taPtr *TemplateArguments) {
+	for btaIndex := range taPtr.BaseTypeArguments {
+		taPtr.BaseTypeArguments[btaIndex] = managerPtr.registerAndNormalizeTypeArgument(taPtr.BaseTypeArguments[btaIndex])
+	}
+	for mtaIndex := range taPtr.FuncTypeArguments {
+		taPtr.FuncTypeArguments[mtaIndex] = managerPtr.registerAndNormalizeTypeArgument(taPtr.FuncTypeArguments[mtaIndex])
+	}
 }
 
 func checkError(err error, msg string) {

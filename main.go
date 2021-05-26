@@ -28,8 +28,16 @@ func main() {
 			TypesDescriptors: []typeCtors.TypeDescriptor{
 				{
 					TypeConstructorName: "Stream",
+					BaseTypeArguments:   typeCtors.TypeArguments{},
+					FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
+						{{Type: "int"}},
+						{{Type: "string"}},
+					},
+				},
+				{
+					TypeConstructorName: "Stream",
 					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}},
-					FuncTypeArgumentsForWhichTemplatesAreInstantiated: []typeCtors.TypeArguments{
+					FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
 						{},
 						{{Type: "string"}},
 						{{Type: "int"}},
@@ -40,7 +48,7 @@ func main() {
 				{
 					TypeConstructorName: "Stream",
 					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "string"}},
-					FuncTypeArgumentsForWhichTemplatesAreInstantiated: []typeCtors.TypeArguments{
+					FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
 						{},
 						{{Type: "string"}},
 					},
@@ -48,14 +56,14 @@ func main() {
 				{
 					TypeConstructorName: "Validate",
 					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}, {Type: "string"}},
-					FuncTypeArgumentsForWhichTemplatesAreInstantiated: []typeCtors.TypeArguments{
+					FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
 						{{Type: "string"}},
 					},
 				},
 				{
 					TypeConstructorName: "ValiResu",
 					BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}, {Type: "string"}},
-					FuncTypeArgumentsForWhichTemplatesAreInstantiated: []typeCtors.TypeArguments{
+					FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
 						{{Type: "string"}},
 					},
 				},

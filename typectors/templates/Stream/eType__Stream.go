@@ -5,14 +5,7 @@ package fung
 // #importAnchor
 
 // #excludeSectionBegin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
-
 import "fmt"
-
-// The type of the elements in the EStream
-
-func (es1 Stream_eType) Corresponds__eType(es2 Stream_eType, f func(e1 eType, e2 eType) bool) bool {
-	panic("This template line should have been removed")
-}
 
 // #excludeSectionEnd
 
