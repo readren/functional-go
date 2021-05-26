@@ -1,14 +1,14 @@
 package fung
 
-type aType = struct{}
-type bType = struct{}
-type cType = struct{}
-type dType = struct{}
-type eType = struct{}
-type kType = struct{}
-type sType = struct{}
-type xType = struct{}
-type yType = struct{}
+type aType struct{}
+type bType struct{}
+type cType struct{}
+type dType struct{}
+type eType struct{}
+type kType struct{}
+type sType struct{}
+type xType struct{}
+type yType struct{}
 
 type Errors_aType map[aType]error
 type Errors_bType map[bType]error
@@ -53,8 +53,12 @@ func Stream__Single__eType(e eType) Stream_eType {
 }
 
 type Validate_sType_aType func() (sType, Errors_aType)
+type Validate_aType_bType func() (aType, Errors_bType)
 type Validate_aType_kType func() (aType, Errors_kType)
-
+type Validate_bType_kType func() (bType, Errors_kType)
+type Validate_cType_kType func() (cType, Errors_kType)
+type Validate_dType_kType func() (dType, Errors_kType)
+type Validate_eType_kType func() (eType, Errors_kType)
 type ValiResu_aType_bType struct {
 	Val  aType
 	Errs Errors_bType
