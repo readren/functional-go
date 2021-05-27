@@ -1,6 +1,7 @@
 package typectors
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -35,143 +36,9 @@ type Chapter struct {
 // Given we use a slice to contain the chapters in order to index them by the number of base type arguments; some elements of the slice may be empty.
 var emptyChapter = Chapter{[]string{}, []Template{}, nil}
 
-// Contains all the known instances of `TypeConstructor` indexed by its name.
-var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor{
-	"Recover": {
-		{ //0 baseParam
-			[]string{},
-			[]Template{
-				{"Recover", []string{}},               // 0 funcParams
-				{"Recover__aType", []string{"aType"}}, // 0 funcParams
-			},
-			func(baseTypeArguments TypeArguments) string {
-				return "Recover"
-			},
-		},
-	},
-	"Errors": {
-		{ //0 baseParam
-			[]string{},
-			[]Template{
-				{},                                   // 0 funcParams
-				{"Errors__kType", []string{"kType"}}, // 1 funcParams
-			},
-			func(baseTypeArguments TypeArguments) string {
-				return "Errors"
-			},
-		},
-		{ //1 baseParam
-			[]string{"kType"},
-			[]Template{
-				{"kType__Errors", []string{"kType"}}, // 0 funcParams
-			},
-			func(baseTypeArguments TypeArguments) string {
-				return "Errors"
-			},
-		},
-	},
-	"Func1": {
-		emptyChapter, //0 baseParam
-		emptyChapter, //1 baseParam
-		{ //2 baseParam
-			[]string{"xType", "yType"},
-			[]Template{
-				{"xType__yType__Func1", []string{}},               // 0 funcParams
-				{"xType__yType__Func1__aType", []string{"aType"}}, // 0 funcParams
-			},
-			func(baseTypeArguments TypeArguments) string {
-				return fmt.Sprintf("FuncFrom_%s_to_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
-			},
-		},
-	},
-	"Giver1": {
-		emptyChapter, //0 baseParam
-		{ //1 baseParam
-			[]string{"sType"},
-			[]Template{
-				{"sType__Giver", []string{}},
-				{"sType__Giver__aType", []string{"aType"}},
-			},
-			func(baseTypeArguments TypeArguments) string {
-				return fmt.Sprintf("Giver_%s", baseTypeArguments[0].GetTypeName())
-			},
-		},
-	},
-	"Stream": {
-		{ //0 baseParam
-			[]string{},
-			[]Template{
-				{},
-				{"Stream__aType", []string{"aType"}},
-			},
-			func(baseTypeArguments TypeArguments) string {
-				return "Stream"
-			},
-		},
-		{ //1 baseParam
-			[]string{"eType"},
-			[]Template{
-				{"eType__Stream", []string{}},
-				{"eType__Stream__aType", []string{"aType"}},
-				{"eType__Stream__aType__bType", []string{"aType", "bType"}},
-			},
-			func(baseTypeArguments TypeArguments) string {
-				return fmt.Sprintf("Stream_%s", baseTypeArguments[0].GetTypeName())
-			},
-		},
-	},
-	"Validate": {
-		{ //0 baseParams
-			[]string{},
-			[]Template{
-				{},
-				{"Validate__aType__bType", []string{"aType", "bType"}},
-				{"Validate__aType__bType__cType", []string{"aType", "bType", "cType"}},
-				{"Validate__aType__bType__cType__dType", []string{"aType", "bType", "cType", "dType"}},
-				{"Validate__aType__bType__cType__dType__eType", []string{"aType", "bType", "cType", "dType", "eType"}},
-			},
-			func(baseTypeArguments TypeArguments) string {
-				return "Validate"
-			},
-		},
-		emptyChapter, // 1 baseParams
-		{ //2 baseParams
-			[]string{"sType", "kType"},
-			[]Template{
-				{"sType__kType__Validate", []string{}},
-				{"sType__kType__Validate__aType", []string{"aType"}},
-			},
-			func(baseTypeArguments TypeArguments) string {
-				return fmt.Sprintf("Validate_%s_idx_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
-			},
-		},
-	},
-	"ValiResu": {
-		{ //0 baseParams
-			[]string{},
-			[]Template{
-				{},
-				{"ValiResu__aType__bType", []string{"aType", "bType"}},
-				{"ValiResu__aType__bType__cType", []string{"aType", "bType", "cType"}},
-				{"ValiResu__aType__bType__cType__dType", []string{"aType", "bType", "cType", "dType"}},
-				{"ValiResu__aType__bType__cType__dType__eType", []string{"aType", "bType", "cType", "dType", "eType"}},
-			},
-			func(baseTypeArguments TypeArguments) string {
-				return "ValiResu"
-			},
-		},
-		emptyChapter, //1 baseParams
-		{ //2 baseParams
-			[]string{"sType", "kType"},
-			[]Template{
-				{"sType__kType__ValiResu", []string{}},
-				{"sType__kType__ValiResu__aType", []string{"aType"}},
-			},
-			func(baseTypeArguments TypeArguments) string {
-				return fmt.Sprintf("ValiResu_%s_idx_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
-			},
-		},
-	},
+type PackageBuilder struct {
+	TypeConstructorsMap map[string]TypeConstructor
+	TemplatesFS         embed.FS
 }
 
 //// TypeArgument ////
@@ -260,23 +127,14 @@ type TypeDescriptor struct {
 type Config struct {
 	GeneratedPackageParentDir string
 	GeneratedPackageName      string
-	TemplatesFolder           string
-	TypesDescriptors          []TypeDescriptor
+	// path to the directory that is the direct parent of all the type construtors directories, relative to the root of the `embed.FS` specified in `PackageBuilder.TemplatesFS`.
+	// Each type constructor directory contained there should have the same name than the corresponding key in the `PackageBuilder.TypeConstructorsMap`, and value of `TypeDescriptor.TypeConstructorName`.
+	TemplatesBaseDir string
+	// Specifies which types to instantiate, based on the provided type constructors.
+	TypesDescriptors []TypeDescriptor
 }
 
-type manager struct {
-	config                   Config
-	tempDir                  string
-	allDistinctTypeArguments map[string]TypeArgument
-	// the set where the `TemplateArguments` of all the already parsed `#dependsOn` directives are accumulated
-	requestedDependencies setOfTemplateArgs
-	// the set that memorizes which template instantiations where already done
-	instantiatedDependencies                 setOfTemplateArgs
-	funcsWithNoInternalDependantsAreExcluded bool
-	dependenciesGroupedByDependent           map[string]setOfTemplateArgs
-}
-
-func GeneratePackage(config Config) {
+func (packageBuilder PackageBuilder) Build(config Config) {
 	workingDir, err := os.Getwd()
 	checkError(err, "unable to get the working directory")
 
@@ -289,7 +147,16 @@ func GeneratePackage(config Config) {
 	// comonSrcFile := filepath.Join(config.TemplatesFolder, "common.go")
 	// checkError(copyFile(comonSrcFile, filepath.Join(tempDir, "common.go")), fmt.Sprintf(`unable to copy the "%s" file to the temporary directory`, comonSrcFile))
 
-	var manager = manager{config, tempDir, map[string]TypeArgument{}, setOfTemplateArgs{}, setOfTemplateArgs{}, false, make(map[string]setOfTemplateArgs)}
+	var manager = manager{
+		packageBuilder,
+		config,
+		tempDir,
+		map[string]TypeArgument{},
+		setOfTemplateArgs{},
+		setOfTemplateArgs{},
+		false,
+		make(map[string]setOfTemplateArgs),
+	}
 	manager.groupAllTypeArgumentsByType()
 
 	// Instantiate all the templates specified in the `config`
@@ -317,6 +184,20 @@ func GeneratePackage(config Config) {
 
 	// print dependencies relationship report
 	manager.printInternalDependencisReport()
+}
+
+// Contains information and state that is shared between the `PackageBuilder.Build` function and other functions it calls.
+type manager struct {
+	PackageBuilder           PackageBuilder
+	config                   Config
+	tempDir                  string
+	allDistinctTypeArguments map[string]TypeArgument
+	// the set where the `TemplateArguments` of all the already parsed `#dependsOn` directives are accumulated
+	requestedDependencies setOfTemplateArgs
+	// the set that memorizes which template instantiations where already done
+	instantiatedDependencies                 setOfTemplateArgs
+	funcsWithNoInternalDependantsAreExcluded bool
+	dependenciesGroupedByDependent           map[string]setOfTemplateArgs
 }
 
 func (managerPtr *manager) printInternalDependencisReport() {
@@ -386,7 +267,7 @@ func (managerPtr *manager) registerAndNormalizeTypeArgument(ta TypeArgument) Typ
 // Generates the golang source files that compose a type (`Stream<int>`, or `Validate<image.Point, string>`, or ...); provided the type constructor (`Stream`, or `Validate`, or ...),  the base type arguments (`int` for stream, or `image.Point` and `string` for validate, or ...), and a set of func type arguments lists.
 func (managerPtr *manager) incarnateType(td TypeDescriptor) {
 	// Obtain the `TypeConstructor` specified in the received `TypeDescriptor`.
-	typeConstructor := knowTypeConstructors[td.TypeConstructorName]
+	typeConstructor := fungTypeConstructors[td.TypeConstructorName]
 	// Pick the chapter with the number of base type parameters specified in the received `TypeDescriptor`.
 	chapter := typeConstructor[len(td.BaseTypeArguments)]
 	// Instantiate the templates of the chapter for each of the sets of func type arguments specified in the received `TypeDescriptor`
@@ -419,8 +300,8 @@ var startOfFuncsWithNoInternalDependantsRegex = regexp.MustCompile(`(?m)^.*#star
 // Generates a source file based on this template with the specified type arguments
 func (template *Template) instantiate(typeConstructorName string, chapter Chapter, baseTypeArguments TypeArguments, methodTypeArguments TypeArguments, managerPtr *manager) {
 
-	templateSrcFile := fmt.Sprintf("%s/%s/%s.go", managerPtr.config.TemplatesFolder, typeConstructorName, template.FileName)
-	source, err := ioutil.ReadFile(templateSrcFile)
+	templateSrcFile := fmt.Sprintf("%s/%s/%s.go", managerPtr.config.TemplatesBaseDir, typeConstructorName, template.FileName)
+	source, err := managerPtr.PackageBuilder.TemplatesFS.ReadFile(templateSrcFile)
 	checkError(err, fmt.Sprintf("unable to load the template source file %s", templateSrcFile))
 	codeFile := codeFile{template.FileName, source}
 
