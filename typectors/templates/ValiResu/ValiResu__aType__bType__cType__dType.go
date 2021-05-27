@@ -9,12 +9,12 @@ package fung
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"sType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Errors", "baseTArgs": [{"type":"kType"}] }
 func ValiResu__Combine4__aType__bType__cType__dType(
-	ka kType, va ValiResu_aType_kType,
-	kb kType, vb ValiResu_bType_kType,
-	kc kType, vc ValiResu_cType_kType,
-	kd kType, vd ValiResu_dType_kType,
-	f func(aType, bType, cType, dType) ValiResu_sType_kType,
-) (vs ValiResu_sType_kType) {
+	ka kType, va ValiResu_aType_idx_kType,
+	kb kType, vb ValiResu_bType_idx_kType,
+	kc kType, vc ValiResu_cType_idx_kType,
+	kd kType, vd ValiResu_dType_idx_kType,
+	f func(aType, bType, cType, dType) ValiResu_sType_idx_kType,
+) (vs ValiResu_sType_idx_kType) {
 	if va.Errs.IsEmpty() && vb.Errs.IsEmpty() && vc.Errs.IsEmpty() {
 		vs = f(va.Val, vb.Val, vc.Val, vd.Val)
 	} else {
@@ -35,13 +35,13 @@ func ValiResu__Combine4__aType__bType__cType__dType(
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"sType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Errors", "baseTArgs": [{"type":"kType"}] }
 func ValiResu__Map4__aType__bType__cType__dType(
-	ka kType, va ValiResu_aType_kType,
-	kb kType, vb ValiResu_bType_kType,
-	kc kType, vc ValiResu_cType_kType,
-	kd kType, vd ValiResu_dType_kType,
+	ka kType, va ValiResu_aType_idx_kType,
+	kb kType, vb ValiResu_bType_idx_kType,
+	kc kType, vc ValiResu_cType_idx_kType,
+	kd kType, vd ValiResu_dType_idx_kType,
 	f func(aType, bType, cType, dType) sType,
-) (vs ValiResu_sType_kType) {
-	return ValiResu__Combine4__aType__bType__cType__dType(ka, va, kb, vb, kc, vc, kd, vd, func(a aType, b bType, c cType, d dType) ValiResu_sType_kType {
-		return ValiResu_sType_kType{f(a, b, c, d), nil}
+) (vs ValiResu_sType_idx_kType) {
+	return ValiResu__Combine4__aType__bType__cType__dType(ka, va, kb, vb, kc, vc, kd, vd, func(a aType, b bType, c cType, d dType) ValiResu_sType_idx_kType {
+		return ValiResu_sType_idx_kType{f(a, b, c, d), nil}
 	})
 }

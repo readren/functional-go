@@ -22,13 +22,3 @@ func (f FuncFrom_xType_to_yType) Composed__aType(g FuncFrom_yType_to_aType) Func
 		return g(f(x))
 	}
 }
-
-// TODO change the name, move or delete, because it is not cohesive.
-// #dependsOn {"typeCtor":"ValiResu", "baseTArgs":[{"type":"yType"},{"type":"aType"}]}
-// #dependsOn {"typeCtor":"Func1", "baseTArgs":[{"type":"xType"},{"type":"ValiResu_yType_aType"}] }
-func (f FuncFrom_xType_to_yType) Validated__aType(key aType) FuncFrom_xType_to_ValiResu_yType_aType {
-	return func(x xType) (vr ValiResu_yType_aType) {
-		vr.Val = f(x)
-		return
-	}
-}

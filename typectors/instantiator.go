@@ -121,7 +121,19 @@ var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 		},
 	},
 	"Validate": {
-		emptyChapter, // 0 baseParams
+		{ //0 baseParams
+			[]string{},
+			[]Template{
+				{},
+				{"Validate__aType__bType", []string{"aType", "bType"}},
+				{"Validate__aType__bType__cType", []string{"aType", "bType", "cType"}},
+				{"Validate__aType__bType__cType__dType", []string{"aType", "bType", "cType", "dType"}},
+				{"Validate__aType__bType__cType__dType__eType", []string{"aType", "bType", "cType", "dType", "eType"}},
+			},
+			func(baseTypeArguments TypeArguments) string {
+				return "Validate"
+			},
+		},
 		emptyChapter, // 1 baseParams
 		{ //2 baseParams
 			[]string{"sType", "kType"},
@@ -130,7 +142,7 @@ var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 				{"sType__kType__Validate__aType", []string{"aType"}},
 			},
 			func(baseTypeArguments TypeArguments) string {
-				return fmt.Sprintf("Validate_%s", baseTypeArguments[0].GetTypeName())
+				return fmt.Sprintf("Validate_%s_idx_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
 			},
 		},
 	},
@@ -156,7 +168,7 @@ var knowTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 				{"sType__kType__ValiResu__aType", []string{"aType"}},
 			},
 			func(baseTypeArguments TypeArguments) string {
-				return fmt.Sprintf("ValiResu_%s", baseTypeArguments[0].GetTypeName())
+				return fmt.Sprintf("ValiResu_%s_idx_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
 			},
 		},
 	},
@@ -261,6 +273,7 @@ type manager struct {
 	// the set that memorizes which template instantiations where already done
 	instantiatedDependencies                 setOfTemplateArgs
 	funcsWithNoInternalDependantsAreExcluded bool
+	dependenciesGroupedByDependent           map[string]setOfTemplateArgs
 }
 
 func GeneratePackage(config Config) {
@@ -276,7 +289,7 @@ func GeneratePackage(config Config) {
 	// comonSrcFile := filepath.Join(config.TemplatesFolder, "common.go")
 	// checkError(copyFile(comonSrcFile, filepath.Join(tempDir, "common.go")), fmt.Sprintf(`unable to copy the "%s" file to the temporary directory`, comonSrcFile))
 
-	var manager = manager{config, tempDir, map[string]TypeArgument{}, setOfTemplateArgs{}, setOfTemplateArgs{}, false}
+	var manager = manager{config, tempDir, map[string]TypeArgument{}, setOfTemplateArgs{}, setOfTemplateArgs{}, false, make(map[string]setOfTemplateArgs)}
 	manager.groupAllTypeArgumentsByType()
 
 	// Instantiate all the templates specified in the `config`
@@ -301,6 +314,29 @@ func GeneratePackage(config Config) {
 	// Move the generated source files from temporary directory to the one specified in the `Config`.
 	generatedPackageDir := filepath.Join(config.GeneratedPackageParentDir, config.GeneratedPackageName)
 	checkError(copyDirectory(tempDir, generatedPackageDir), fmt.Sprintf(`unable to copy the generated files from the temporary directory to the destination "%s"`, generatedPackageDir))
+
+	// print dependencies relationship report
+	manager.printInternalDependencisReport()
+}
+
+func (managerPtr *manager) printInternalDependencisReport() {
+	for dependent, dependants := range managerPtr.dependenciesGroupedByDependent {
+		fmt.Printf("\n\"%s\" depends on:\n", dependent)
+		for _, dependant := range dependants {
+			var sb strings.Builder
+			for _, bta := range dependant.BaseTypeArguments {
+				sb.WriteString(bta.GetTypeName())
+				sb.WriteString("__")
+			}
+			sb.WriteString(dependant.TypeConstructorName)
+			for _, fta := range dependant.FuncTypeArguments {
+				sb.WriteString("__")
+				sb.WriteString(fta.GetTypeName())
+			}
+			sb.WriteString(".go")
+			fmt.Printf("\t%v\n", sb.String())
+		}
+	}
 }
 
 // Groups all the `TypeArgument` instances contained in all the instances of `TypeDescriptor`, discriminating by the `Type` field and reducing the other fields to the most complete occurrence.
@@ -427,13 +463,17 @@ func (template *Template) instantiate(typeConstructorName string, chapter Chapte
 
 	// Collect the dependencies on template instantiations required by this template. Note that given the type parameters were already replaced by the actual type arguments, the parsed `#dependsOn` directives contain actual types.
 	internalDependenciesMatchs := dependsOnDirectiveRegex.FindAllSubmatch(codeFile.content, -1)
+	internalDependenciesSet := make(setOfTemplateArgs, 0)
 	for _, match := range internalDependenciesMatchs {
 		// fmt.Printf("#dependsOn match: %s\n", match[1]) // TODO remove this line
 		var internalDependency TemplateArguments
 		checkError(json.Unmarshal(match[1], &internalDependency), fmt.Sprintf("unable to parse the directive: #dependsOn %s", match[1]))
 		managerPtr.normalizeTemplateArguments(&internalDependency)
 		managerPtr.requestedDependencies.add(&internalDependency)
+		// memorize the dependency relationship for the final report
+		internalDependenciesSet.add(&internalDependency)
 	}
+	managerPtr.dependenciesGroupedByDependent[codeFile.fileName] = internalDependenciesSet
 
 	// Remove the excluded section. This should be done after the dependencies obtention because the excluded section may contain `#dependsOn` directives.
 	codeFile.content = excludeSectionRegex.ReplaceAll(codeFile.content, []byte{})
