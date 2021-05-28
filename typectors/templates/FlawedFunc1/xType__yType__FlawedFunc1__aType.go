@@ -35,7 +35,7 @@ func (f FlawedFuncFrom_xType_to_yType) Guarded__aType(key aType, guard Guard) fu
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs":[{"type":"yType"},{"type":"aType"}]}
 // #dependsOn {"typeCtor":"Func1", "baseTArgs":[{"type":"xType"},{"type":"ValiResu_yType_idx_aType"}] }
 // #dependsOn {"typeCtor":"Errors", "funcTArgs":[{"type":"aType"}]}
-func (f FlawedFuncFrom_xType_to_yType) Validated__aType(key aType) FuncFrom_xType_to_ValiResu_yType_aType {
+func (f FlawedFuncFrom_xType_to_yType) Validationd__aType(key aType) FuncFrom_xType_to_ValiResu_yType_aType {
 	return func(x xType) (vr ValiResu_yType_idx_aType) {
 		var err error
 		vr.Val, err = f(x)

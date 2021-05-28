@@ -1,10 +1,10 @@
 package fung
 
 // #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"sType"}] }
-// #dependsOn {"typeCtor":"Validate", "baseTArgs": [{"type":"aType", "type":"kType"}] }
-// #dependsOn {"typeCtor":"Validate", "baseTArgs": [{"type":"[]aType", "type":"kType"}] }
+// #dependsOn {"typeCtor":"Validation", "baseTArgs": [{"type":"aType", "type":"kType"}] }
+// #dependsOn {"typeCtor":"Validation", "baseTArgs": [{"type":"[]aType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Errors", "baseTArgs": [{"type":"kType"}] }
-func Validate__Traverse__sType__kType__aType(stream Stream_sType, f func(sType) Validate_aType_idx_kType) Validate_Slice_aType_idx_kType {
+func Validation__Traverse__sType__kType__aType(stream Stream_sType, f func(sType) Validation_aType_idx_kType) Validation_Slice_aType_idx_kType {
 	return func() (slice []aType, errsAccum Errors_kType) {
 		slice = make([]aType, 0)
 		errsAccum = Errors__New__kType()

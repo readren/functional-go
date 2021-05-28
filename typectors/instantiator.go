@@ -267,7 +267,7 @@ func (managerPtr *manager) registerAndNormalizeTypeArgument(ta TypeArgument) Typ
 
 var InvalidTypeDescriptor = errors.New("invalid type descriptor")
 
-// Generates the golang source files that compose a type (`Stream<int>`, or `Validate<image.Point, string>`, or ...); provided the type constructor (`Stream`, or `Validate`, or ...),  the base type arguments (`int` for stream, or `image.Point` and `string` for validate, or ...), and a set of func type arguments lists.
+// Generates the golang source files that compose a type (`Stream<int>`, or `Validation<image.Point, string>`, or ...); provided the type constructor (`Stream`, or `Validation`, or ...),  the base type arguments (`int` for stream, or `image.Point` and `string` for validate, or ...), and a set of func type arguments lists.
 func (managerPtr *manager) incarnateType(td TypeDescriptor) {
 	// Obtain the `TypeConstructor` specified in the received `TypeDescriptor`.
 	typeConstructor := fungTypeConstructors[td.TypeConstructorName]

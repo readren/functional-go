@@ -11,12 +11,12 @@ Despite the name, it is not a goal of this library to be fundamentally functiona
 To start with, I decide to include type constructors for data types that golang does not have:
 - `Stream` a monadic immutable collection that evaluates lazily  
 - `ValiResu` A monadic validation result with combinators that accumulate the errors. 
-- `Validate` A monadic validation action that behaves like `ValiResu` but evaluates lazily.
+- `Validation` A monadic validate action that behaves like `ValiResu` but evaluates lazily.
 - some other data types needed to support the above.
 
 Other type constructors will be added over time with your active help ;)
 
->~~Note: The `ValiResult` and `Validate` data types are not fully monads because they use a map (instead of a set or sorted sequence) to accumulate the errors and therefore the associative rule is not satisfied when two instances contain different errors indexed with the same key.
+>~~Note: The `ValiResult` and `Validation` data types are not fully monads because they use a map (instead of a set or sorted sequence) to accumulate the errors and therefore the associative rule is not satisfied when two instances contain different errors indexed with the same key.
 > But they behave as monads provided distinct errors are associated to distinct keys, which is easy to achieve assigning different keys to errors coming from different places.~~ 
 
 # Type constructor instantiation

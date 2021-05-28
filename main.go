@@ -47,7 +47,7 @@ func main() {
 			},
 			{
 				TypeConstructorName: "Stream",
-				BaseTypeArguments:   typeCtors.TypeArguments{{Type: "Validate_int_idx_string"}},
+				BaseTypeArguments:   typeCtors.TypeArguments{{Type: "Validation_int_idx_string"}},
 				FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
 					{},
 				},
@@ -61,14 +61,14 @@ func main() {
 				},
 			},
 			{
-				TypeConstructorName: "Validate",
+				TypeConstructorName: "Validation",
 				BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}, {Type: "string"}},
 				FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
 					{{Type: "string"}},
 				},
 			},
 			{
-				TypeConstructorName: "Validate",
+				TypeConstructorName: "Validation",
 				BaseTypeArguments:   typeCtors.TypeArguments{{Type: "[]int"}, {Type: "string"}},
 				FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
 					{},
@@ -85,7 +85,7 @@ func main() {
 				TypeConstructorName: "Func1",
 				BaseTypeArguments:   typeCtors.TypeArguments{},
 				FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
-					{{Type: "Validate_int_idx_string"}},
+					{{Type: "Validation_int_idx_string"}},
 				},
 			},
 		},
