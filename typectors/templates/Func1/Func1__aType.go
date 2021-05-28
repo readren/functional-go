@@ -1,5 +1,5 @@
 package fung
 
-func Func1__Identity__aType(a aType) aType {
+func (companion func1Companion) Identity__aType(a aType) aType {
 	return a
 }

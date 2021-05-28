@@ -1,5 +1,9 @@
 package fung
 
+type func1Companion struct{}
+
+var Func1 func1Companion
+
 type aType struct{}
 type bType struct{}
 type cType struct{}
@@ -52,10 +56,12 @@ type Stream_Validation_sType_by_kType func() (Validation_sType_by_kType, Stream_
 
 type Validation_slice_sType_by_kType func() ([]sType, Errors_kType)
 
-func Validation__Traverse__Validation_sType_by_kType__kType__sType(stream Stream_Validation_sType_by_kType, f func(Validation_sType_by_kType) Validation_sType_by_kType) Validation_slice_sType_by_kType {
-	panic(1)
+type FuncFrom_Validation_sType_by_kType_to_Validation_sType_by_kType func(v Validation_sType_by_kType) Validation_sType_by_kType
+
+func (companion func1Companion) Identity__Validation_sType_by_kType(v Validation_sType_by_kType) Validation_sType_by_kType {
+	return v
 }
 
-func Func1__Identity__Validation_sType_by_kType(v Validation_sType_by_kType) Validation_sType_by_kType {
-	return v
+func (companion validationCompanion) Traverse__Validation_sType_by_kType__kType__sType(stream Stream_Validation_sType_by_kType, f func(v Validation_sType_by_kType) Validation_sType_by_kType) Validation_slice_sType_by_kType {
+	panic(1)
 }

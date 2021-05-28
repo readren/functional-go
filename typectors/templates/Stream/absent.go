@@ -4,9 +4,9 @@ type aType struct{}
 type bType struct{}
 type eType struct{}
 
-type Stream_eType func() (eType, Stream_eType)
+type Stream_aType func() (aType, Stream_aType)
 
-func Stream__Single__eType(e eType) Stream_eType {
+func (companion streamCompanion) Single__eType(e eType) Stream_eType {
 	panic(1)
 }
 

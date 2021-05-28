@@ -9,7 +9,7 @@ package fung
 // #dependsOn {"typeCtor":"Validation", "baseTArgs": [{"type":"eType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Validation", "baseTArgs": [{"type":"sType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Errors", "baseTArgs": [{"type":"kType"}] }
-func Validation__Combine5__sType__kType__aType__bType__cType__dType__eType(
+func (companion validationCompanion) Combine5__sType__kType__aType__bType__cType__dType__eType(
 	ka kType, va Validation_aType_by_kType,
 	kb kType, vb Validation_bType_by_kType,
 	kc kType, vc Validation_cType_by_kType,
@@ -45,7 +45,7 @@ func Validation__Combine5__sType__kType__aType__bType__cType__dType__eType(
 // #dependsOn {"typeCtor":"Validation", "baseTArgs": [{"type":"eType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Validation", "baseTArgs": [{"type":"sType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Errors", "baseTArgs": [{"type":"kType"}] }
-func Validation__Map5__sType__kType__aType__bType__cType__dType__eType(
+func (companion validationCompanion) Map5__sType__kType__aType__bType__cType__dType__eType(
 	ka kType, va Validation_aType_by_kType,
 	kb kType, vb Validation_bType_by_kType,
 	kc kType, vc Validation_cType_by_kType,
@@ -53,7 +53,7 @@ func Validation__Map5__sType__kType__aType__bType__cType__dType__eType(
 	ke kType, ve Validation_eType_by_kType,
 	f func(aType, bType, cType, dType, eType) sType,
 ) Validation_sType_by_kType {
-	return Validation__Combine5__sType__kType__aType__bType__cType__dType__eType(ka, va, kb, vb, kc, vc, kd, vd, ke, ve, func(a aType, b bType, c cType, d dType, e eType) Validation_sType_by_kType {
+	return companion.Combine5__sType__kType__aType__bType__cType__dType__eType(ka, va, kb, vb, kc, vc, kd, vd, ke, ve, func(a aType, b bType, c cType, d dType, e eType) Validation_sType_by_kType {
 		return func() (sType, Errors_kType) {
 			return f(a, b, c, d, e), nil
 		}

@@ -1,7 +1,5 @@
 package fung
 
-// #dependsOn {"typeCtor":"FlawedFunc1", "baseTArgs":[{"type":"xType"},{"type":"yType"}]}
-
 // #importAnchor
 
 // #dependsOn {"typeCtor":"FlawedFunc1", "baseTArgs":[{"type":"yType"},{"type":"aType"}]}
@@ -21,7 +19,7 @@ func (f FlawedFuncFrom_xType_to_yType) Composed__aType(g FlawedFuncFrom_yType_to
 // #dependsOn {"typeCtor":"Errors", "funcTArgs":[{"type":"aType"}]}
 func (f FlawedFuncFrom_xType_to_yType) Guarded__aType(key aType, guard Guard) func(xType) (yType, Errors_aType) {
 	return func(x xType) (y yType, errs Errors_aType) {
-		defer recover__catch__aType(&errs, guard, key)
+		defer Recover.catch__aType(&errs, guard, key)
 		var err error
 		y, err = f(x)
 		if err != nil {

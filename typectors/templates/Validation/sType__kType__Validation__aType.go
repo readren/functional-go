@@ -1,7 +1,5 @@
 package fung
 
-// #dependsOn {"typeCtor":"Validation", "baseTArgs": [{"type":"sType"},{"type":"kType"}] }
-
 // #importAnchor
 
 // #dependsOn {"typeCtor":"Validation", "baseTArgs": [{"type":"aType"},{"type":"kType"}] }

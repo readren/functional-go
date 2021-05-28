@@ -4,6 +4,10 @@ type aType struct{}
 
 type Errors_aType map[aType]error
 
-func Errors__New__aType() Errors_aType {
+type errorsCompanion struct{}
+
+var Errors errorsCompanion
+
+func (companion errorsCompanion) New__aType() Errors_aType {
 	panic(1)
 }

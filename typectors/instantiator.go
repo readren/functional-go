@@ -265,7 +265,7 @@ func (managerPtr *manager) registerAndNormalizeTypeArgument(ta TypeArgument) Typ
 	}
 }
 
-var InvalidTypeDescriptor = errors.New("invalid type descriptor")
+var ErrInvalidTypeDescriptor = errors.New("invalid type descriptor")
 
 // Generates the golang source files that compose a type (`Stream<int>`, or `Validation<image.Point, string>`, or ...); provided the type constructor (`Stream`, or `Validation`, or ...),  the base type arguments (`int` for stream, or `image.Point` and `string` for validate, or ...), and a set of func type arguments lists.
 func (managerPtr *manager) incarnateType(td TypeDescriptor) {
@@ -274,7 +274,7 @@ func (managerPtr *manager) incarnateType(td TypeDescriptor) {
 	// check if the type constructor has a chapter with a number of base type parameters equal to the number of base type arguments in `tc.BaseTypeArguments`.
 	numberOfBaseTypeArguments := len(td.BaseTypeArguments)
 	if numberOfBaseTypeArguments > len(typeConstructor) {
-		panic(fmt.Errorf("%w: the type constructor %s ha no function with %d base type parameters", InvalidTypeDescriptor, td.TypeConstructorName, numberOfBaseTypeArguments))
+		panic(fmt.Errorf("%w: the type constructor %s ha no function with %d base type parameters", ErrInvalidTypeDescriptor, td.TypeConstructorName, numberOfBaseTypeArguments))
 	}
 	// Pick the chapter with the number of base type parameters specified in the received `TypeDescriptor`.
 	chapter := typeConstructor[numberOfBaseTypeArguments]
@@ -283,7 +283,7 @@ func (managerPtr *manager) incarnateType(td TypeDescriptor) {
 		// check if the chapter has a template with a number of func type parameters equal to the number of func type arguments in `funcTypeArguments`.
 		numberOfFuncTypeArguments := len(funcTypeArguments)
 		if numberOfBaseTypeArguments > len(chapter.Templates) {
-			panic(fmt.Errorf("%w: the type constructor %s ha no function with %d base type parameters and %d func type parameters", InvalidTypeDescriptor, td.TypeConstructorName, numberOfBaseTypeArguments, numberOfFuncTypeArguments))
+			panic(fmt.Errorf("%w: the type constructor %s ha no function with %d base type parameters and %d func type parameters", ErrInvalidTypeDescriptor, td.TypeConstructorName, numberOfBaseTypeArguments, numberOfFuncTypeArguments))
 		}
 		// choose the polymorphic funcs's template appropiate for the number of type arguments
 		template := chapter.Templates[numberOfFuncTypeArguments]
@@ -309,10 +309,10 @@ var excludeSectionRegex = regexp.MustCompile(`(?m)^.*#excludeSectionBegin\s(.|\n
 var importAnchorRegex = regexp.MustCompile(`(?m)^.*#importAnchor\s.*$`)
 var startOfFuncsWithNoInternalDependantsRegex = regexp.MustCompile(`(?m)^.*#startOfFuncsWithNoInternalDependants(.|\s)*`)
 
-var InvalidTypeConstructor = errors.New("invalid type constructor")
+var ErrInvalidTypeConstructor = errors.New("invalid type constructor")
 
 // Generates a source file based on this template with the specified type arguments
-func (template *Template) instantiate(typeConstructorName string, chapter Chapter, baseTypeArguments TypeArguments, methodTypeArguments TypeArguments, managerPtr *manager) {
+func (template *Template) instantiate(typeConstructorName string, chapter Chapter, baseTypeArguments TypeArguments, funcTypeArguments TypeArguments, managerPtr *manager) {
 
 	templateSrcFile := fmt.Sprintf("%s/%s/%s.go", managerPtr.config.TemplatesBaseDir, typeConstructorName, template.FileName)
 	source, err := managerPtr.PackageBuilder.TemplatesFS.ReadFile(templateSrcFile)
@@ -347,7 +347,7 @@ func (template *Template) instantiate(typeConstructorName string, chapter Chapte
 		codeFile.replaceTypeParameterWithTypeArgument(typeParameterName, typeArgument)
 	}
 	// replace polymorphic methods type parameters with the actual type arguments
-	for typeParameterIndex, typeArgument := range methodTypeArguments {
+	for typeParameterIndex, typeArgument := range funcTypeArguments {
 		if len(typeArgument.PackagePath) > 0 {
 			externalDependencies[typeArgument.PackagePath] = typeArgument.PackageAlias
 		}
@@ -356,7 +356,7 @@ func (template *Template) instantiate(typeConstructorName string, chapter Chapte
 	}
 
 	// Add this template instantiation to the set of template instantiations that are already done
-	managerPtr.instantiatedDependencies.add(&TemplateArguments{typeConstructorName, baseTypeArguments, methodTypeArguments})
+	managerPtr.instantiatedDependencies.add(&TemplateArguments{typeConstructorName, baseTypeArguments, funcTypeArguments})
 
 	// Collect the dependencies on template instantiations required by this template. Note that given the type parameters were already replaced by the actual type arguments, the parsed `#dependsOn` directives contain actual types.
 	internalDependenciesMatchs := dependsOnDirectiveRegex.FindAllSubmatch(codeFile.content, -1)
@@ -370,6 +370,18 @@ func (template *Template) instantiate(typeConstructorName string, chapter Chapte
 		// memorize the dependency relationship for the final report
 		internalDependenciesSet.add(&internalDependency)
 	}
+
+	// Add the implicit dependency to the template with same base and zero func type parameters.
+	if len(funcTypeArguments) > 0 {
+		implicitDepen := TemplateArguments{
+			TypeConstructorName: typeConstructorName,
+			BaseTypeArguments:   baseTypeArguments,
+			FuncTypeArguments:   TypeArguments{},
+		}
+		managerPtr.requestedDependencies.add(&implicitDepen)
+		internalDependenciesSet.add(&implicitDepen)
+	}
+
 	managerPtr.dependenciesGroupedByDependent[codeFile.fileName] = internalDependenciesSet
 
 	// Remove the excluded section. This should be done after the dependencies obtention because the excluded section may contain `#dependsOn` directives.

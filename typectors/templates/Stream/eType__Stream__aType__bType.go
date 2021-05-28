@@ -1,7 +1,5 @@
 package fung
 
-// #dependsOn {"typeCtor":"Stream", "funcTArgs":[{"type":"eType"}]}
-
 // #importAnchor
 
 // #startOfFuncsWithNoInternalDependants

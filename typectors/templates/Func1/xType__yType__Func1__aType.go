@@ -1,7 +1,5 @@
 package fung
 
-// #dependsOn {"typeCtor":"Func1", "baseTArgs":[{"type":"xType"},{"type":"yType"}]}
-
 // #importAnchor
 
 // #dependsOn {"typeCtor":"Recover", "funcTArgs":[{"type":"aType"}]}

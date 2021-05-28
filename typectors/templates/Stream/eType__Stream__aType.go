@@ -1,7 +1,5 @@
 package fung
 
-// #dependsOn {"typeCtor":"Stream", "funcTArgs":[{"type":"eType"}]}
-
 // #importAnchor
 
 // #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
@@ -84,7 +82,7 @@ func (es Stream_eType) MappedKEI__aType(indexBase int, f func(e eType, index int
 // #dependsOn {"typeCtor":"Stream", "baseTArgs": [{"type":"aType"}]}
 func (es Stream_eType) Scanned__aType(z aType, f func(aType, eType) aType) Stream_aType {
 	if es == nil {
-		return Stream__Single__aType(z)
+		return Stream.Single__aType(z)
 	} else {
 		return func() (aType, Stream_aType) {
 			var e eType

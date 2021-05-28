@@ -15,7 +15,7 @@ func (fxy FlawedFuncFrom_xType_to_yType) Fixed(x xType) func() (yType, error) {
 // #dependsOn {"typeCtor":"Recover"}
 func (fxy FlawedFuncFrom_xType_to_yType) Guarded(guard Guard) func(xType) (yType, error) {
 	return func(x xType) (y yType, err error) {
-		defer recover__catch(&err, guard)
+		defer Recover.catch(&err, guard)
 		y, err = fxy(x)
 		return
 	}

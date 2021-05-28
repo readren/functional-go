@@ -1,13 +1,14 @@
 package fung
 
-// #dependsOn {"typeCtor":"Stream", "baseTArgs":[], "funcTArgs":[{"type":"eType"}]}
-
 // #importAnchor
 
 // #excludeSectionBegin These lines are not included in the generated source files. They exist to make the template file compiler friendly.
 import "fmt"
 
 // #excludeSectionEnd
+
+// The type of the stream whose elements are of type `aType`
+type Stream_eType func() (eType, Stream_eType)
 
 ////
 
@@ -51,8 +52,9 @@ func (es Stream_eType) PrecededBy(a eType) Stream_eType {
 }
 
 // Note: this method is fully lazy. Applying it traverses no element of this stream.
+// #dependsOn {"typeCtor":"Stream", "funcTArgs":[{"type":"eType"}]}
 func (es Stream_eType) SuccedeedBy(e eType) Stream_eType {
-	return es.FollowedBy(Stream__Single__eType(e))
+	return es.FollowedBy(Stream.Single__eType(e))
 }
 
 func (es Stream_eType) IsEmpty() bool {
