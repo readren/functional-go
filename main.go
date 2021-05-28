@@ -40,6 +40,20 @@ func main() {
 			},
 			{
 				TypeConstructorName: "Stream",
+				BaseTypeArguments:   typeCtors.TypeArguments{{Type: "float32"}},
+				FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
+					{},
+				},
+			},
+			{
+				TypeConstructorName: "Stream",
+				BaseTypeArguments:   typeCtors.TypeArguments{{Type: "Validate_int_idx_string"}},
+				FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
+					{},
+				},
+			},
+			{
+				TypeConstructorName: "Stream",
 				BaseTypeArguments:   typeCtors.TypeArguments{{Type: "string"}},
 				FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
 					{},
@@ -54,10 +68,24 @@ func main() {
 				},
 			},
 			{
+				TypeConstructorName: "Validate",
+				BaseTypeArguments:   typeCtors.TypeArguments{{Type: "[]int"}, {Type: "string"}},
+				FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
+					{},
+				},
+			},
+			{
 				TypeConstructorName: "ValiResu",
 				BaseTypeArguments:   typeCtors.TypeArguments{{Type: "int"}, {Type: "string"}},
 				FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
 					{{Type: "string"}},
+				},
+			},
+			{
+				TypeConstructorName: "Func1",
+				BaseTypeArguments:   typeCtors.TypeArguments{},
+				FuncTypeArgumentsForWhichFuncsAreIncluded: []typeCtors.TypeArguments{
+					{{Type: "Validate_int_idx_string"}},
 				},
 			},
 		},

@@ -13,3 +13,5 @@ type FuncFrom_xType_to_aType func(x xType) aType
 
 func recover__catch(errPtr *error, guard Guard)                           {}
 func recover__catch__aType(errsPtr *Errors_aType, guard Guard, key aType) {}
+
+type FuncFrom_xType_to_xType func(xType) xType

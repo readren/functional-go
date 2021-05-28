@@ -15,7 +15,7 @@ var fungTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 			[]string{},
 			[]Template{
 				{"Recover", []string{}},               // 0 funcParams
-				{"Recover__aType", []string{"aType"}}, // 0 funcParams
+				{"Recover__aType", []string{"aType"}}, // 1 funcParams
 			},
 			func(baseTypeArguments TypeArguments) string {
 				return "Recover"
@@ -44,13 +44,22 @@ var fungTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 		},
 	},
 	"Func1": {
-		emptyChapter, //0 baseParam
+		{ // 0 baseParam
+			[]string{},
+			[]Template{
+				{},                                  // 0 funcParams
+				{"Func1__aType", []string{"aType"}}, // 1 funcParams
+			},
+			func(baseTypeArguments TypeArguments) string {
+				return "Func1"
+			},
+		},
 		emptyChapter, //1 baseParam
 		{ //2 baseParam
 			[]string{"xType", "yType"},
 			[]Template{
 				{"xType__yType__Func1", []string{}},               // 0 funcParams
-				{"xType__yType__Func1__aType", []string{"aType"}}, // 0 funcParams
+				{"xType__yType__Func1__aType", []string{"aType"}}, // 1 funcParams
 			},
 			func(baseTypeArguments TypeArguments) string {
 				return fmt.Sprintf("FuncFrom_%s_to_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
@@ -98,10 +107,11 @@ var fungTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 			[]string{},
 			[]Template{
 				{},
-				{"Validate__aType__bType", []string{"aType", "bType"}},
-				{"Validate__aType__bType__cType", []string{"aType", "bType", "cType"}},
-				{"Validate__aType__bType__cType__dType", []string{"aType", "bType", "cType", "dType"}},
-				{"Validate__aType__bType__cType__dType__eType", []string{"aType", "bType", "cType", "dType", "eType"}},
+				{"Validate__sType__kType", []string{"sType", "kType"}},
+				{"Validate__sType__kType__aType__bType", []string{"sType", "kType", "aType", "bType"}},
+				{"Validate__sType__kType__aType__bType__cType", []string{"sType", "kType", "aType", "bType", "cType"}},
+				{"Validate__sType__kType__aType__bType__cType__dType", []string{"sType", "kType", "aType", "bType", "cType", "dType"}},
+				{"Validate__sType__kType__aType__bType__cType__dType__eType", []string{"sType", "kType", "aType", "bType", "cType", "dType", "eType"}},
 			},
 			func(baseTypeArguments TypeArguments) string {
 				return "Validate"
@@ -124,10 +134,11 @@ var fungTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 			[]string{},
 			[]Template{
 				{},
-				{"ValiResu__aType__bType", []string{"aType", "bType"}},
-				{"ValiResu__aType__bType__cType", []string{"aType", "bType", "cType"}},
-				{"ValiResu__aType__bType__cType__dType", []string{"aType", "bType", "cType", "dType"}},
-				{"ValiResu__aType__bType__cType__dType__eType", []string{"aType", "bType", "cType", "dType", "eType"}},
+				{"ValiResu__sType__kType", []string{"sType", "kType"}},
+				{"ValiResu__sType__kType__aType__bType", []string{"sType", "kType", "aType", "bType"}},
+				{"ValiResu__sType__kType__aType__bType__cType", []string{"sType", "kType", "aType", "bType", "cType"}},
+				{"ValiResu__sType__kType__aType__bType__cType__dType", []string{"sType", "kType", "aType", "bType", "cType", "dType"}},
+				{"ValiResu__sType__kType__aType__bType__cType__dType__eType", []string{"sType", "kType", "aType", "bType", "cType", "dType", "eType"}},
 			},
 			func(baseTypeArguments TypeArguments) string {
 				return "ValiResu"

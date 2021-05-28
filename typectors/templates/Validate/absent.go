@@ -10,6 +10,7 @@ type kType struct{}
 
 type Errors_aType map[aType]error
 type Errors_bType map[bType]error
+type Errors_cType map[cType]error
 type Errors_kType map[kType]error
 
 func Errors__New__kType() Errors_kType {
@@ -41,4 +42,20 @@ func (f FuncFrom_sType_to_aType) Guarded__kType(kType, Guard) func(sType) (aType
 
 func (fsa FuncFrom_sType_to_Validate_aType_idx_kType) Guarded__kType(key kType, guard Guard) func(sType) (Validate_aType_idx_kType, Errors_kType) {
 	panic(1)
+}
+
+type Stream_sType func() (sType, Stream_sType)
+
+type Validate_Slice_aType_idx_kType func() ([]aType, Errors_kType)
+
+type Stream_Validate_sType_idx_kType func() (Validate_sType_idx_kType, Stream_Validate_sType_idx_kType)
+
+type Validate_slice_sType_idx_kType func() ([]sType, Errors_kType)
+
+func Validate__Traverse__Validate_sType_idx_kType__kType__sType(stream Stream_Validate_sType_idx_kType, f func(Validate_sType_idx_kType) Validate_sType_idx_kType) Validate_slice_sType_idx_kType {
+	panic(1)
+}
+
+func Func1__Identity__Validate_sType_idx_kType(v Validate_sType_idx_kType) Validate_sType_idx_kType {
+	return v
 }

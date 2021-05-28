@@ -6,23 +6,26 @@ package fung
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"bType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"cType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"dType", "type":"kType"}] }
+// #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"eType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"sType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Errors", "baseTArgs": [{"type":"kType"}] }
-func ValiResu__Combine4__aType__bType__cType__dType(
+func ValiResu__Combine5__sType__kType__aType__bType__cType__dType__eType(
 	ka kType, va ValiResu_aType_idx_kType,
 	kb kType, vb ValiResu_bType_idx_kType,
 	kc kType, vc ValiResu_cType_idx_kType,
 	kd kType, vd ValiResu_dType_idx_kType,
-	f func(aType, bType, cType, dType) ValiResu_sType_idx_kType,
+	ke kType, ve ValiResu_eType_idx_kType,
+	f func(aType, bType, cType, dType, eType) ValiResu_sType_idx_kType,
 ) (vs ValiResu_sType_idx_kType) {
 	if va.Errs.IsEmpty() && vb.Errs.IsEmpty() && vc.Errs.IsEmpty() {
-		vs = f(va.Val, vb.Val, vc.Val, vd.Val)
+		vs = f(va.Val, vb.Val, vc.Val, vd.Val, ve.Val)
 	} else {
 		errs := Errors__New__kType()
 		errs.PutAll(va.Errs)
 		errs.PutAll(vb.Errs)
 		errs.PutAll(vc.Errs)
 		errs.PutAll(vd.Errs)
+		errs.PutAll(ve.Errs)
 		vs.Errs = errs
 	}
 	return
@@ -32,16 +35,18 @@ func ValiResu__Combine4__aType__bType__cType__dType(
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"bType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"cType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"dType", "type":"kType"}] }
+// #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"eType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"sType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Errors", "baseTArgs": [{"type":"kType"}] }
-func ValiResu__Map4__aType__bType__cType__dType(
+func ValiResu__Map5__sType__kType__aType__bType__cType__dType__eType(
 	ka kType, va ValiResu_aType_idx_kType,
 	kb kType, vb ValiResu_bType_idx_kType,
 	kc kType, vc ValiResu_cType_idx_kType,
 	kd kType, vd ValiResu_dType_idx_kType,
-	f func(aType, bType, cType, dType) sType,
+	ke kType, ve ValiResu_eType_idx_kType,
+	f func(aType, bType, cType, dType, eType) sType,
 ) (vs ValiResu_sType_idx_kType) {
-	return ValiResu__Combine4__aType__bType__cType__dType(ka, va, kb, vb, kc, vc, kd, vd, func(a aType, b bType, c cType, d dType) ValiResu_sType_idx_kType {
-		return ValiResu_sType_idx_kType{f(a, b, c, d), nil}
+	return ValiResu__Combine5__sType__kType__aType__bType__cType__dType__eType(ka, va, kb, vb, kc, vc, kd, vd, ke, ve, func(a aType, b bType, c cType, d dType, e eType) ValiResu_sType_idx_kType {
+		return ValiResu_sType_idx_kType{f(a, b, c, d, e), nil}
 	})
 }

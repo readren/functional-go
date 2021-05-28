@@ -3,6 +3,7 @@ package typectors
 import (
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -264,17 +265,28 @@ func (managerPtr *manager) registerAndNormalizeTypeArgument(ta TypeArgument) Typ
 	}
 }
 
+var InvalidTypeDescriptor = errors.New("invalid type descriptor")
+
 // Generates the golang source files that compose a type (`Stream<int>`, or `Validate<image.Point, string>`, or ...); provided the type constructor (`Stream`, or `Validate`, or ...),  the base type arguments (`int` for stream, or `image.Point` and `string` for validate, or ...), and a set of func type arguments lists.
 func (managerPtr *manager) incarnateType(td TypeDescriptor) {
 	// Obtain the `TypeConstructor` specified in the received `TypeDescriptor`.
 	typeConstructor := fungTypeConstructors[td.TypeConstructorName]
+	// check if the type constructor has a chapter with a number of base type parameters equal to the number of base type arguments in `tc.BaseTypeArguments`.
+	numberOfBaseTypeArguments := len(td.BaseTypeArguments)
+	if numberOfBaseTypeArguments > len(typeConstructor) {
+		panic(fmt.Errorf("%w: the type constructor %s ha no function with %d base type parameters", InvalidTypeDescriptor, td.TypeConstructorName, numberOfBaseTypeArguments))
+	}
 	// Pick the chapter with the number of base type parameters specified in the received `TypeDescriptor`.
-	chapter := typeConstructor[len(td.BaseTypeArguments)]
+	chapter := typeConstructor[numberOfBaseTypeArguments]
 	// Instantiate the templates of the chapter for each of the sets of func type arguments specified in the received `TypeDescriptor`
 	for _, funcTypeArguments := range td.FuncTypeArgumentsForWhichFuncsAreIncluded {
-		numberOfFuncTypeParameters := len(funcTypeArguments)
+		// check if the chapter has a template with a number of func type parameters equal to the number of func type arguments in `funcTypeArguments`.
+		numberOfFuncTypeArguments := len(funcTypeArguments)
+		if numberOfBaseTypeArguments > len(chapter.Templates) {
+			panic(fmt.Errorf("%w: the type constructor %s ha no function with %d base type parameters and %d func type parameters", InvalidTypeDescriptor, td.TypeConstructorName, numberOfBaseTypeArguments, numberOfFuncTypeArguments))
+		}
 		// choose the polymorphic funcs's template appropiate for the number of type arguments
-		template := chapter.Templates[numberOfFuncTypeParameters]
+		template := chapter.Templates[numberOfFuncTypeArguments]
 		// instantiate it
 		template.instantiate(td.TypeConstructorName, chapter, td.BaseTypeArguments, funcTypeArguments, managerPtr)
 	}
@@ -297,12 +309,16 @@ var excludeSectionRegex = regexp.MustCompile(`(?m)^.*#excludeSectionBegin\s(.|\n
 var importAnchorRegex = regexp.MustCompile(`(?m)^.*#importAnchor\s.*$`)
 var startOfFuncsWithNoInternalDependantsRegex = regexp.MustCompile(`(?m)^.*#startOfFuncsWithNoInternalDependants(.|\s)*`)
 
+var InvalidTypeConstructor = errors.New("invalid type constructor")
+
 // Generates a source file based on this template with the specified type arguments
 func (template *Template) instantiate(typeConstructorName string, chapter Chapter, baseTypeArguments TypeArguments, methodTypeArguments TypeArguments, managerPtr *manager) {
 
 	templateSrcFile := fmt.Sprintf("%s/%s/%s.go", managerPtr.config.TemplatesBaseDir, typeConstructorName, template.FileName)
 	source, err := managerPtr.PackageBuilder.TemplatesFS.ReadFile(templateSrcFile)
 	checkError(err, fmt.Sprintf("unable to load the template source file %s", templateSrcFile))
+
+	defer contextualizeErrors(fmt.Sprintf("parsing the template \"%s\"", templateSrcFile))
 	codeFile := codeFile{template.FileName, source}
 
 	if managerPtr.funcsWithNoInternalDependantsAreExcluded {
@@ -407,5 +423,15 @@ func (managerPtr *manager) normalizeTemplateArguments(taPtr *TemplateArguments) 
 func checkError(err error, msg string) {
 	if err != nil {
 		panic(fmt.Errorf("%s : %w", msg, err))
+	}
+}
+
+func contextualizeErrors(message string) {
+	if r := recover(); r != nil {
+		if e, ok := r.(error); ok {
+			panic(fmt.Errorf("%s : %w", message, e))
+		} else {
+			panic(r)
+		}
 	}
 }
