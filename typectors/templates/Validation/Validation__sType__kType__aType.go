@@ -4,7 +4,7 @@ package fung
 // #dependsOn {"typeCtor":"Validation", "baseTArgs": [{"type":"aType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Validation", "baseTArgs": [{"type":"[]aType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Errors", "baseTArgs": [{"type":"kType"}] }
-func Validation__Traverse__sType__kType__aType(stream Stream_sType, f func(sType) Validation_aType_idx_kType) Validation_Slice_aType_idx_kType {
+func Validation__Traverse__sType__kType__aType(stream Stream_sType, f func(sType) Validation_aType_by_kType) Validation_Slice_aType_by_kType {
 	return func() (slice []aType, errsAccum Errors_kType) {
 		slice = make([]aType, 0)
 		errsAccum = Errors__New__kType()

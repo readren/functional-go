@@ -125,7 +125,7 @@ var fungTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 				{"sType__kType__Validation__aType", []string{"aType"}},
 			},
 			func(baseTypeArguments TypeArguments) string {
-				return fmt.Sprintf("Validation_%s_idx_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
+				return fmt.Sprintf("Validation_%s_by_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
 			},
 		},
 	},
@@ -152,7 +152,7 @@ var fungTypeConstructors map[string]TypeConstructor = map[string]TypeConstructor
 				{"sType__kType__ValiResu__aType", []string{"aType"}},
 			},
 			func(baseTypeArguments TypeArguments) string {
-				return fmt.Sprintf("ValiResu_%s_idx_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
+				return fmt.Sprintf("ValiResu_%s_by_%s", baseTypeArguments[0].GetTypeName(), baseTypeArguments[1].GetTypeName())
 			},
 		},
 	},

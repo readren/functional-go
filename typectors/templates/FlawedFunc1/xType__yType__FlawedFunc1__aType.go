@@ -33,10 +33,10 @@ func (f FlawedFuncFrom_xType_to_yType) Guarded__aType(key aType, guard Guard) fu
 
 // TODO change the name, move or delete, because it is not cohesive.
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs":[{"type":"yType"},{"type":"aType"}]}
-// #dependsOn {"typeCtor":"Func1", "baseTArgs":[{"type":"xType"},{"type":"ValiResu_yType_idx_aType"}] }
+// #dependsOn {"typeCtor":"Func1", "baseTArgs":[{"type":"xType"},{"type":"ValiResu_yType_by_aType"}] }
 // #dependsOn {"typeCtor":"Errors", "funcTArgs":[{"type":"aType"}]}
 func (f FlawedFuncFrom_xType_to_yType) Validationd__aType(key aType) FuncFrom_xType_to_ValiResu_yType_aType {
-	return func(x xType) (vr ValiResu_yType_idx_aType) {
+	return func(x xType) (vr ValiResu_yType_by_aType) {
 		var err error
 		vr.Val, err = f(x)
 		if err != nil {

@@ -2,7 +2,7 @@ package fung
 
 // #importAnchor
 
-type ValiResu_sType_idx_kType struct {
+type ValiResu_sType_by_kType struct {
 	Val  sType
 	Errs Errors_kType
 }

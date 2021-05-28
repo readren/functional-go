@@ -8,11 +8,11 @@ package fung
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"sType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Errors", "baseTArgs": [{"type":"kType"}] }
 func ValiResu__Combine3__sType__kType__aType__bType__cType(
-	ka kType, va ValiResu_aType_idx_kType,
-	kb kType, vb ValiResu_bType_idx_kType,
-	kc kType, vc ValiResu_cType_idx_kType,
-	f func(aType, bType, cType) ValiResu_sType_idx_kType,
-) (vs ValiResu_sType_idx_kType) {
+	ka kType, va ValiResu_aType_by_kType,
+	kb kType, vb ValiResu_bType_by_kType,
+	kc kType, vc ValiResu_cType_by_kType,
+	f func(aType, bType, cType) ValiResu_sType_by_kType,
+) (vs ValiResu_sType_by_kType) {
 	if va.Errs.IsEmpty() && vb.Errs.IsEmpty() && vc.Errs.IsEmpty() {
 		vs = f(va.Val, vb.Val, vc.Val)
 	} else {
@@ -31,12 +31,12 @@ func ValiResu__Combine3__sType__kType__aType__bType__cType(
 // #dependsOn {"typeCtor":"ValiResu", "baseTArgs": [{"type":"sType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Errors", "baseTArgs": [{"type":"kType"}] }
 func ValiResu__Map3__sType__kType__aType__bType__cType(
-	ka kType, va ValiResu_aType_idx_kType,
-	kb kType, vb ValiResu_bType_idx_kType,
-	kc kType, vc ValiResu_cType_idx_kType,
+	ka kType, va ValiResu_aType_by_kType,
+	kb kType, vb ValiResu_bType_by_kType,
+	kc kType, vc ValiResu_cType_by_kType,
 	f func(aType, bType, cType) sType,
-) (vs ValiResu_sType_idx_kType) {
-	return ValiResu__Combine3__sType__kType__aType__bType__cType(ka, va, kb, vb, kc, vc, func(a aType, b bType, c cType) ValiResu_sType_idx_kType {
-		return ValiResu_sType_idx_kType{f(a, b, c), nil}
+) (vs ValiResu_sType_by_kType) {
+	return ValiResu__Combine3__sType__kType__aType__bType__cType(ka, va, kb, vb, kc, vc, func(a aType, b bType, c cType) ValiResu_sType_by_kType {
+		return ValiResu_sType_by_kType{f(a, b, c), nil}
 	})
 }

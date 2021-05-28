@@ -8,11 +8,11 @@ package fung
 // #dependsOn {"typeCtor":"Validation", "baseTArgs": [{"type":"sType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Errors", "baseTArgs": [{"type":"kType"}] }
 func Validation__Combine3__sType__kType__aType__bType__cType(
-	ka kType, va Validation_aType_idx_kType,
-	kb kType, vb Validation_bType_idx_kType,
-	kc kType, vc Validation_cType_idx_kType,
-	f func(aType, bType, cType) Validation_sType_idx_kType,
-) Validation_sType_idx_kType {
+	ka kType, va Validation_aType_by_kType,
+	kb kType, vb Validation_bType_by_kType,
+	kc kType, vc Validation_cType_by_kType,
+	f func(aType, bType, cType) Validation_sType_by_kType,
+) Validation_sType_by_kType {
 	return func() (valuS sType, errsS Errors_kType) {
 		valuA, errsA := va()
 		valuB, errsB := vb()
@@ -36,12 +36,12 @@ func Validation__Combine3__sType__kType__aType__bType__cType(
 // #dependsOn {"typeCtor":"Validation", "baseTArgs": [{"type":"sType", "type":"kType"}] }
 // #dependsOn {"typeCtor":"Errors", "baseTArgs": [{"type":"kType"}] }
 func Validation__Map3__sType__kType__aType__bType__cType(
-	ka kType, va Validation_aType_idx_kType,
-	kb kType, vb Validation_bType_idx_kType,
-	kc kType, vc Validation_cType_idx_kType,
+	ka kType, va Validation_aType_by_kType,
+	kb kType, vb Validation_bType_by_kType,
+	kc kType, vc Validation_cType_by_kType,
 	f func(aType, bType, cType) sType,
-) Validation_sType_idx_kType {
-	return Validation__Combine3__sType__kType__aType__bType__cType(ka, va, kb, vb, kc, vc, func(a aType, b bType, c cType) Validation_sType_idx_kType {
+) Validation_sType_by_kType {
+	return Validation__Combine3__sType__kType__aType__bType__cType(ka, va, kb, vb, kc, vc, func(a aType, b bType, c cType) Validation_sType_by_kType {
 		return func() (sType, Errors_kType) {
 			return f(a, b, c), nil
 		}
